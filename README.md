@@ -2,6 +2,8 @@
 
 My Discord bot library that's partially based on Discordrb. Was made because I found Discordrb to be not satisfactory for my purposes.
 
+TODO: Write goddamn documentation because there's currently none.
+
 ## Installation
 
 Add this line to your application's Gemfile:
