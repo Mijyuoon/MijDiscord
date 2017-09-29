@@ -414,7 +414,7 @@ module MijDiscord::Core
 
     def ws_send(data, type)
       unless @handshake_done && !@ws_closed
-        raise StandardError, 'Tried to send something to the websocket while not being connected!'
+        raise 'Tried to send something to the websocket while not being connected!'
       end
 
       frame = WebSocket::Frame::Outgoing::Client.new(data: data, type: type, version: @handshake.version)

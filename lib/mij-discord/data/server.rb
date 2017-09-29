@@ -21,6 +21,12 @@ module MijDiscord::Data
       1 => :mentions,
     }.freeze
 
+    CHANNEL_TYPES = {
+      :text     => 0,
+      :voice    => 2,
+      :category => 4,
+    }.freeze
+
     include IDObject
 
     attr_reader :bot
@@ -237,10 +243,12 @@ module MijDiscord::Data
       channels.select!(&:voice?)
     end
 
-    def create_channel(name, reason = nil, voice: false, bitrate: nil, user_limit: nil, permissions: [], nsfw: false)
+    def create_channel(name, reason = nil, type: :text, bitrate: nil, user_limit: nil, permissions: [], nsfw: false)
+      raise ArgumentError, 'Invalid channel type specified' unless CHANNEL_TYPES.has_key?(type)
+
       permissions = permissions.map {|x| x.is_a(Overwrite) ? x.to_hash : x }
       response = MijDiscord::Core::API::Server.create_channel(@bot.token, @id,
-        name, voice ? 2 : 0, bitrate, user_limit, permissions, nsfw, reason)
+        name, CHANNEL_TYPES[type], bitrate, user_limit, permissions, nsfw, reason)
       @cache.put_channel(JSON.parse(response))
     end
 
@@ -294,6 +302,7 @@ module MijDiscord::Data
 
     def set_name(name, reason = nil)
       set_options(reason, name: name)
+      nil
     end
 
     alias_method :name=, :set_name
@@ -314,6 +323,7 @@ module MijDiscord::Data
       raise ArgumentError, 'Invalid region' unless available_regions.find {|x| x.id == region }
 
       set_options(reason, region: region)
+      nil
     end
 
     alias_method :region=, :set_region
@@ -326,18 +336,21 @@ module MijDiscord::Data
       else
         set_options(reason, icon: icon.to_s)
       end
+      nil
     end
 
     alias_method :icon=, :set_icon
 
     def set_afk_channel(channel, reason = nil)
       set_options(reason, afk_channel: channel.to_id)
+      nil
     end
 
     alias_method :afk_channel=, :set_afk_channel
 
     def set_afk_timeout(timeout, reason = nil)
       set_options(reason, afk_timeout: timeout)
+      nil
     end
 
     alias_method :afk_timeout=, :set_afk_timeout

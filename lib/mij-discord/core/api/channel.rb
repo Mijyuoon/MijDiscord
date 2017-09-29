@@ -16,7 +16,7 @@ module MijDiscord::Core::API::Channel
 
     # Update a channel's data
     # https://discordapp.com/developers/docs/resources/channel#modify-channel
-    def update(token, channel_id, name, topic, nsfw, parent_id, position, bitrate, user_limit, reason = nil)
+    def update(token, channel_id, name, topic, nsfw, parent_id, position, bitrate, user_limit, overwrites, reason = nil)
       MijDiscord::Core::API.request(
         :channels_cid,
         channel_id,
@@ -25,7 +25,8 @@ module MijDiscord::Core::API::Channel
         {
           name: name, topic: topic, nsfw: nsfw,
           parent_id: parent_id, position: position,
-          bitrate: bitrate, user_limit: user_limit
+          bitrate: bitrate, user_limit: user_limit,
+          permission_overwrites: overwrites
         }.delete_if {|_, v| v.nil? }.to_json,
         Authorization: token,
         content_type: :json,

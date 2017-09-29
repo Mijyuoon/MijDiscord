@@ -187,7 +187,7 @@ module MijDiscord
     end
 
     def application
-      raise RuntimeError, 'Cannot get OAuth application for non-bot user' if @type != :bot
+      raise 'Cannot get OAuth application for non-bot user' if @type != :bot
 
       response = MijDiscord::Core::API.oauth_application(@token)
       MijDiscord::Data::Application.new(JSON.parse(response), self)
@@ -563,7 +563,7 @@ module MijDiscord
     private
 
     def gateway_check
-      raise RuntimeError, 'A gateway connection is required for this action' unless connected?
+      raise 'A gateway connection is required for this action' unless connected?
     end
 
     def notify_ready

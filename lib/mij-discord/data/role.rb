@@ -58,24 +58,28 @@ module MijDiscord::Data
 
     def set_name(name)
       set_options(name: name)
+      nil
     end
 
     alias_method :name=, :set_name
 
     def set_hoist(flag)
       set_options(hoist: flag)
+      nil
     end
     
     alias_method :hoist=, :set_hoist
 
     def set_mentionable(flag)
       set_options(mentionable: flag)
+      nil
     end
 
     alias_method :mentionable=, :set_mentionable
 
     def set_color(color)
       set_options(color: color)
+      nil
     end
 
     alias_method :color=, :set_color

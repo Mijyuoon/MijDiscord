@@ -50,7 +50,7 @@ module MijDiscord::Data
         when :category
           ChannelCategory.new(data, bot, server)
         else
-          raise RuntimeError, 'Broken channel object!'
+          raise 'Broken channel object!'
       end
     end
 
@@ -114,6 +114,8 @@ module MijDiscord::Data
       @parent_id ? @server.cache.get_channel(@parent_id) : nil
     end
 
+    alias_method :category, :parent
+
     def member_overwrites
       @permission_overwrites.values.select {|v| v.type == :member }
     end
@@ -123,29 +125,46 @@ module MijDiscord::Data
     end
 
     def set_name(name, reason = nil)
-      return if private?
-
       set_options(reason, name: name)
+      nil
     end
 
     alias_method :name=, :set_name
 
     def set_position(position, reason = nil)
       set_options(reason, position: position)
+      nil
     end
 
     alias_method :position=, :set_position
 
     def set_parent(parent, reason = nil)
-      set_options(reason, parent: parent)
+      channel = @server.cache.get_channel(parent)
+      raise ArgumentError, 'Specified channel is not a category' unless channel&.category?
+
+      set_options(reason, parent: channel)
+      nil
     end
 
+    alias_method :parent=, :set_parent
+    alias_method :set_category, :set_parent
+    alias_method :category=, :set_parent
+
     def set_options(reason = nil, name: nil, topic: nil, nsfw: nil,
-    parent: nil, position: nil, bitrate: nil, user_limit: nil)
+    parent: nil, position: nil, bitrate: nil, user_limit: nil, overwrites: nil)
       response = MijDiscord::Core::API::Channel.update(@bot.token, @id,
-        name, topic, nsfw,parent&.to_id, position, bitrate, user_limit, reason)
+        name, topic, nsfw,parent&.to_id, position, bitrate, user_limit, overwrites, reason)
       @server.cache.put_channel(JSON.parse(response), update: true)
     end
+
+    def set_overwrites(overwrites, reason = nil)
+      set_options(reason, overwrites: overwrites)
+      nil
+    end
+
+    alias_method :overwrites=, :set_overwrites
+    alias_method :set_permission_overwrites, :set_overwrites
+    alias_method :permission_overwrites=, :set_overwrites
 
     def define_overwrite(object, reason = nil, allow: 0, deny: 0)
       unless object.is_a?(Overwrite)
@@ -160,12 +179,26 @@ module MijDiscord::Data
       nil
     end
 
+    alias_method :add_overwrite, :define_overwrite
+    alias_method :define_permission_overwrite, :define_overwrite
+    alias_method :add_permission_overwrite, :define_overwrite
+
     def delete_overwrite(object, reason = nil)
       raise ArgumentError, 'Invalid overwrite target' unless object.respond_to?(:to_id)
       MijDiscord::Core::API::Channel.delete_permission(@bot.token, @id,
         object.to_id, reason)
       nil
     end
+
+    alias_method :delete_permission_overwrite, :delete_overwrite
+
+    def sync_overwrites(reason = nil)
+      raise 'Cannot sync overwrites on a channel with no category set' unless @parent_id
+      set_overwrites(parent.overwrites, reason)
+      nil
+    end
+
+    alias_method :sync_permission_overwrites, :sync_overwrites
 
     def delete(reason = nil)
       MijDiscord::Core::API::Channel.delete(@bot.token, @id, reason)
@@ -239,6 +272,7 @@ module MijDiscord::Data
       return unless text?
 
       set_options(reason, topic: topic)
+      nil
     end
 
     alias_method :topic=, :set_topic
@@ -247,6 +281,7 @@ module MijDiscord::Data
       return unless text?
 
       set_options(reason, nsfw: nsfw)
+      nil
     end
 
     alias_method :nsfw=, :set_nsfw
@@ -297,6 +332,7 @@ module MijDiscord::Data
 
       MijDiscord::Core::API::Channel.bulk_delete_messages(@bot.token, @id, ids)
       ids.each {|m| @cache.remove_message(m) }
+      nil
     end
 
     def invites
@@ -362,8 +398,6 @@ module MijDiscord::Data
 
     def initialize(data, bot, server)
       super(data, bot, server)
-
-
     end
 
     def update_data(data)
@@ -375,12 +409,14 @@ module MijDiscord::Data
 
     def set_bitrate(rate, reason = nil)
       set_options(reason, bitrate: rate)
+      nil
     end
 
     alias_method :bitrate=, :set_bitrate
 
     def set_user_limit(limit, reason = nil)
       set_options(reason, user_limit: limit)
+      nil
     end
 
     alias_method :user_limit=, :set_user_limit
@@ -400,5 +436,7 @@ module MijDiscord::Data
     def channels
       @server.channels.select! {|x| x.parent_id == @id }
     end
+
+    alias_method :children, :channels
   end
 end
