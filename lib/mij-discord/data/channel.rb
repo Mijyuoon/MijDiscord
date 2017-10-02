@@ -264,6 +264,10 @@ module MijDiscord::Data
       end
     end
 
+    def recipient
+      @recipients&.first
+    end
+
     def owner
       @owner_id ? @bot.cache.get_user(@owner_id) : nil
     end
