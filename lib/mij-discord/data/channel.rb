@@ -220,8 +220,12 @@ module MijDiscord::Data
 
     attr_reader :recipients
 
+    attr_reader :last_message_id
+
     def initialize(data, bot, server)
       super(data, bot, server)
+
+      @last_message_id = data['last_message_id']
 
       if private?
         @recipients = []
@@ -270,6 +274,10 @@ module MijDiscord::Data
 
     def owner
       @owner_id ? @bot.cache.get_user(@owner_id) : nil
+    end
+
+    def last_message
+      @last_message_id ? @cache.get_message(@last_message_id) : nil
     end
 
     def set_topic(topic, reason = nil)
