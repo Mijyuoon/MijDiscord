@@ -195,13 +195,13 @@ module MijDiscord
 
     def invite(invite)
       code = parse_invite_code(invite)
-      response = MijDiscord::Core::API::Invite.resolve(token, code)
+      response = MijDiscord::Core::API::Invite.resolve(@token, code)
       MijDiscord::Data::Invite.new(JSON.parse(response), self)
     end
 
     def accept_invite(invite)
       code = parse_invite_code(invite)
-      API::Invite.accept(token, code)
+      MijDiscord::Core::API::Invite.accept(@token, code)
       nil
     end
 
@@ -226,9 +226,9 @@ module MijDiscord
 
     def parse_invite_code(invite)
       case invite
-        when %r[(\w+)] then $1
-        when %r[(?:https?://)?discord\.gg/(\w+)]i then $1
-        when %r[https?://discordapp\.com/invite/(\w+)]i then $1
+        when %r[^(?:https?://)?discord\.gg/(\w+)$]i then $1
+        when %r[^https?://discordapp\.com/invite/(\w+)$]i then $1
+        when %r[^([a-zA-Z0-9]+)$] then $1
         when MijDiscord::Data::Invite then invite.code
         else raise ArgumentError, 'Invalid invite format'
       end
@@ -238,9 +238,9 @@ module MijDiscord
       gateway_check
 
       case mention
-        when /<@!?(\d+)>/
+        when /^<@!?(\d+)>$/
           server_id ? member(server_id, $1) : user($1)
-        when /<@&(\d+)>/
+        when /^<@&(\d+)>$/
           role = role(server_id, $1)
           return role if role
 
@@ -248,7 +248,7 @@ module MijDiscord
             role = sv.role($1)
             return role if role
           end
-        when /<:\w+:(\d+)>/
+        when /^<:\w+:(\d+)>$/
           emoji = emoji(server_id, $1)
           return emoji if emoji
 
@@ -446,7 +446,7 @@ module MijDiscord
 
         when :GUILD_ROLE_DELETE
           server = @cache.get_server(data['guild_id'])
-          role = server.cache.remove_role(data['role']['id'])
+          role = server.cache.remove_role(data['role_id'])
           trigger_event(:delete_role, self, server, role)
 
         when :GUILD_EMOJIS_UPDATE

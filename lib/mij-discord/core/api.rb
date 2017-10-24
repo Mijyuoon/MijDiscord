@@ -8,11 +8,24 @@ module MijDiscord::Core::API
   class << self
     attr_accessor :bot_name
 
-    def user_agent
-      bot_name = @bot_name || 'generic'
-      ua_base = "DiscordBot (https://github.com/Mijyuoon/mij-discord, v#{MijDiscord::VERSION})"
+    def user_agent(kind)
+      case kind
+        when :bot
+          bot_name = @bot_name || 'generic'
+          ua_base = "DiscordBot (https://github.com/Mijyuoon/mij-discord, v#{MijDiscord::VERSION})"
+          "#{ua_base} mij-discord/#{MijDiscord::VERSION} #{bot_name}"
 
-      "#{ua_base} mij-discord/#{MijDiscord::VERSION} #{bot_name}"
+        when :user
+          'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0'
+      end
+    end
+
+    def token_type(token)
+      case token
+        when /^Bot (.+)$/ then :bot
+        when /^mfa\.(.+)$/ then :user
+        else :user
+      end
     end
 
     # Make an icon URL from server and icon IDs
@@ -164,7 +177,8 @@ module MijDiscord::Core::API
       ratelimit_delta, response = nil, nil
 
       if (params = attributes.last).is_a?(Hash)
-        params[:user_agent] = user_agent
+        ua_type = token_type(params[:Authorization])
+        params[:user_agent] = user_agent(ua_type)
         ratelimit_delta = params.delete(:header_bypass_delay)
       end
 

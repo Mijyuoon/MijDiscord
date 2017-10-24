@@ -9,7 +9,7 @@ module MijDiscord::Core::API::Invite
         :invite_code,
         nil,
         :get,
-        "#{MijDiscord::Core::API::APIBASE_URL}/invite/#{invite_code}",
+        "#{MijDiscord::Core::API::APIBASE_URL}/invites/#{invite_code}",
         Authorization: token
       )
     end
@@ -34,7 +34,7 @@ module MijDiscord::Core::API::Invite
         :invite_code,
         nil,
         :post,
-        "#{MijDiscord::Core::API::APIBASE_URL}/invite/#{invite_code}",
+        "#{MijDiscord::Core::API::APIBASE_URL}/invites/#{invite_code}",
         nil,
         Authorization: token
       )
