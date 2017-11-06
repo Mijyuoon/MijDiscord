@@ -79,9 +79,5 @@ module MijDiscord::Data
     def invite_url
       "https://discord.gg/#{@code}"
     end
-
-    def inspect
-      %(<Invite code=#{@code} uses=#{@max_uses} temporary=#{@temporary} revoked=#{@revoked}>)
-    end
   end
 end

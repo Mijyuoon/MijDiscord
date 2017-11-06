@@ -30,9 +30,5 @@ module MijDiscord::Data
       return nil if @icon_id.nil?
       MijDiscord::Core::API.app_icon_url(@id, @icon_id, format)
     end
-
-    def inspect
-      %(<Application id=#{@id} name="#{@name}">)
-    end
   end
 end

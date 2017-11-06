@@ -35,10 +35,6 @@ module MijDiscord::Data
     def icon_url(format = :png)
       MijDiscord::Core::API.emoji_icon_url(@id, format)
     end
-
-    def inspect
-      %(<Emoji id=#{@id} name=#{@name}>)
-    end
   end
 
   class Reaction

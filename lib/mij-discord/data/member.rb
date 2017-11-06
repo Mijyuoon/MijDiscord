@@ -135,10 +135,6 @@ module MijDiscord::Data
       nickname.empty? ? username : nickname
     end
 
-    def inspect
-      %(<Member user=#{@user.inspect} server=#{@server.id}>)
-    end
-
     private
 
     def voice_state_attribute(key)
@@ -165,10 +161,6 @@ module MijDiscord::Data
       @mute = @deaf = @self_mute = @self_deaf = false
       @voice_channel, @server, @roles = nil, nil, []
       @nickname, @joined_at = '', @channel.creation_time
-    end
-
-    def inspect
-      %(<Recipient user=#{@user.inspect} channel=#{@channel.inspect}>)
     end
   end
 end

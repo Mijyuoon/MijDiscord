@@ -170,10 +170,6 @@ module MijDiscord::Data
       MijDiscord::Core::API::Channel.delete_message(@bot.token, @channel.id, @id)
       nil
     end
-
-    def inspect
-      %(<Message id=#{@id} timestamp=#{@timestamp} content="#{@content}" author=#{@author.inspect} channel=#{@channel.inspect}>)
-    end
   end
 
   class Attachment

@@ -126,10 +126,6 @@ module MijDiscord::Data
       return MijDiscord::Core::API::User.default_avatar(@discriminator) unless @avatar_id
       MijDiscord::Core::API::User.avatar_url(@id, @avatar_id, format)
     end
-
-    def inspect
-      %(<User id=#{@id} name="#{@username}" tag=#{@discriminator}>)
-    end
   end
 
   class Profile < User

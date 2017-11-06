@@ -204,10 +204,6 @@ module MijDiscord::Data
       MijDiscord::Core::API::Channel.delete(@bot.token, @id, reason)
       @server.cache.remove_channel(@id)
     end
-
-    def inspect
-      %(<Channel id=#{@id} server=#{@server.id} name="#{@name}" type=#{@type}>)
-    end
   end
 
   class TextChannel < Channel

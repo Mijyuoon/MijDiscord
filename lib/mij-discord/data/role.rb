@@ -93,11 +93,5 @@ module MijDiscord::Data
         name, color&.to_i, hoist, mentionable, permissions&.to_i)
       @server.cache.put_role(JSON.parse(response), update: true)
     end
-
-    def inspect
-      %(<Role id=#{@id} name=#{@name} server=#{@server.inspect}>)
-    end
-
-    private
   end
 end

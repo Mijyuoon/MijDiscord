@@ -364,9 +364,5 @@ module MijDiscord::Data
       return nil unless @embed_enabled
       MijDiscord::Core::API.widget_url(@id, style)
     end
-
-    def inspect
-      %(<Server id=#{@id} name="#{@name}" large=#{@large} region=#{@region_id} owner=#{@owner.id}>)
-    end
   end
 end
