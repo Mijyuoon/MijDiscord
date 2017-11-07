@@ -48,16 +48,7 @@ module MijDiscord
 
     UNAVAILABLE_SERVER_TIMEOUT = 10
 
-    USER_STATUS = {
-      online: :online,
-      idle: :idle,
-      away: :idle,
-      dnd: :dnd,
-      busy: :dnd,
-      invisible: :invisible,
-      hidden: :invisible,
-      offline: :offline
-    }.freeze
+    USER_STATUS = [:online, :idle, :dnd, :invisible, :offline].freeze
 
     attr_reader :name
 
@@ -296,7 +287,7 @@ module MijDiscord
     def change_status(status: nil, game: nil, url: nil)
       gateway_check
 
-      status = status.nil? ? @profile.status : USER_STATUS[status]
+      status = status.nil? ? @profile.status : USER_STATUS.find(status)
       raise ArgumentError, "Status '#{status}' is not valid" unless status
 
       game_obj = case game
