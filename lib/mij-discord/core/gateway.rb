@@ -106,8 +106,8 @@ module MijDiscord::Core
 
     attr_accessor :check_heartbeat_acks
 
-    def initialize(bot, token, shard_key = nil)
-      @bot, @token, @shard_key = bot, token, shard_key
+    def initialize(bot, auth, shard_key = nil)
+      @bot, @auth, @shard_key = bot, auth, shard_key
 
       @ws_success = false
       @getc_mutex = Mutex.new
@@ -278,11 +278,11 @@ module MijDiscord::Core
           '$referring_domain': '',
       }
 
-      send_identify(@token, props, true, LARGE_THRESHOLD, @shard_key)
+      send_identify(@auth, props, true, LARGE_THRESHOLD, @shard_key)
     end
 
     def send_resume_self
-      send_resume(@token, @session.session_id, @session.sequence)
+      send_resume(@auth, @session.session_id, @session.sequence)
     end
 
     def setup_heartbeat(interval)
@@ -331,7 +331,7 @@ module MijDiscord::Core
     end
 
     def get_gateway_url
-      response = API.gateway(@token)
+      response = API.gateway(@auth)
       raw_url = JSON.parse(response)['url']
       raw_url << '/' unless raw_url.end_with? '/'
       "#{raw_url}?encoding=json&v=#{GATEWAY_VERSION}"

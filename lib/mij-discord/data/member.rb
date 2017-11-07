@@ -74,7 +74,7 @@ module MijDiscord::Data
 
     def set_roles(roles, reason = nil)
       roles = roles.map(&:to_id)
-      MijDiscord::Core::API::Server.update_member(@bot.token, @server.id, @user.id, reason, roles: roles)
+      MijDiscord::Core::API::Server.update_member(@bot.auth, @server.id, @user.id, reason, roles: roles)
     end
 
     def modify_roles(add, remove, reason = nil)
@@ -88,7 +88,7 @@ module MijDiscord::Data
         modify_roles(role, [], reason)
       else
         role = role.to_id
-        MijDiscord::Core::API::Server.add_member_role(@bot.token, @server.id, @user.id, role, reason)
+        MijDiscord::Core::API::Server.add_member_role(@bot.auth, @server.id, @user.id, role, reason)
       end
     end
 
@@ -97,7 +97,7 @@ module MijDiscord::Data
         modify_roles([], role, reason)
       else
         role = role.to_id
-        MijDiscord::Core::API::Server.remove_member_role(@bot.token, @server.id, @user.id, role, reason)
+        MijDiscord::Core::API::Server.remove_member_role(@bot.auth, @server.id, @user.id, role, reason)
       end
     end
 
@@ -123,9 +123,9 @@ module MijDiscord::Data
       nick ||= ''
 
       if @user.current_bot?
-        MijDiscord::Core::API::User.change_own_nickname(@bot.token, @server.id, nick, reason)
+        MijDiscord::Core::API::User.change_own_nickname(@bot.auth, @server.id, nick, reason)
       else
-        MijDiscord::Core::API::Server.update_member(@bot.token, @server.id, @user.id, reason, nick: nick)
+        MijDiscord::Core::API::Server.update_member(@bot.auth, @server.id, @user.id, reason, nick: nick)
       end
     end
 

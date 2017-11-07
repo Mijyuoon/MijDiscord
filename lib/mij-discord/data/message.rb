@@ -114,18 +114,18 @@ module MijDiscord::Data
     end
 
     def edit(text: '', embed: nil)
-      response = MijDiscord::Core::API::Channel.edit_message(@bot.token, @channel.id, @id,
+      response = MijDiscord::Core::API::Channel.edit_message(@bot.auth, @channel.id, @id,
         text, [], embed&.to_h)
       @channel.cache.put_message(JSON.parse(response), update: true)
     end
 
     def pin
-      MijDiscord::Core::API::Channel.pin_message(@bot.token, @channel.id, @id)
+      MijDiscord::Core::API::Channel.pin_message(@bot.auth, @channel.id, @id)
       nil
     end
 
     def unpin
-      MijDiscord::Core::API::Channel.unpin_message(@bot.token, @channel.id, @id)
+      MijDiscord::Core::API::Channel.unpin_message(@bot.auth, @channel.id, @id)
       nil
     end
 
@@ -139,7 +139,7 @@ module MijDiscord::Data
 
     def create_reaction(reaction)
       emoji = reaction.respond_to?(:reaction) ? reaction.reaction : reaction
-      MijDiscord::Core::API::Channel.create_reaction(@bot.token, @channel.id, @id, emoji)
+      MijDiscord::Core::API::Channel.create_reaction(@bot.auth, @channel.id, @id, emoji)
       nil
     end
 
@@ -147,27 +147,27 @@ module MijDiscord::Data
 
     def reacted_with(reaction)
       emoji = reaction.respond_to?(:reaction) ? reaction.reaction : reaction
-      response = MijDiscord::Core::API::Channel.get_reactions(@bot.token, @channel.id, @id, emoji)
+      response = MijDiscord::Core::API::Channel.get_reactions(@bot.auth, @channel.id, @id, emoji)
       JSON.parse(response).map {|x| @bot.cache.put_user(x) }
     end
 
     def delete_reaction(reaction, user: nil)
       emoji = reaction.respond_to?(:reaction) ? reaction.reaction : reaction
       if user.nil?
-        MijDiscord::Core::API::Channel.delete_own_reaction(@bot.token, @channel.id, @id, emoji)
+        MijDiscord::Core::API::Channel.delete_own_reaction(@bot.auth, @channel.id, @id, emoji)
       else
-        MijDiscord::Core::API::Channel.delete_user_reaction(@bot.token, @channel.id, @id, emoji, user.to_id)
+        MijDiscord::Core::API::Channel.delete_user_reaction(@bot.auth, @channel.id, @id, emoji, user.to_id)
       end
       nil
     end
 
     def clear_reactions
-      MijDiscord::Core::API::Channel.delete_all_reactions(@bot.token, @channel.id, @id)
+      MijDiscord::Core::API::Channel.delete_all_reactions(@bot.auth, @channel.id, @id)
       nil
     end
 
     def delete
-      MijDiscord::Core::API::Channel.delete_message(@bot.token, @channel.id, @id)
+      MijDiscord::Core::API::Channel.delete_message(@bot.auth, @channel.id, @id)
       nil
     end
   end

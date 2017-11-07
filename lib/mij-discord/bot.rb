@@ -2,6 +2,18 @@
 
 module MijDiscord
   class Bot
+    class AuthInfo
+      attr_reader :token
+
+      attr_reader :type
+
+      def initialize(token, type)
+        @token, @type = token, type
+      end
+
+      alias_method :to_s, :token
+    end
+
     EVENTS = {
       ready: MijDiscord::Events::Ready,
       heartbeat: MijDiscord::Events::Heartbeat,
@@ -52,11 +64,9 @@ module MijDiscord
 
     attr_reader :name
 
-    attr_reader :type
-
     attr_reader :client_id
 
-    attr_reader :token
+    attr_reader :auth
 
     attr_reader :shard_key
 
@@ -68,18 +78,20 @@ module MijDiscord
 
     def initialize(client_id:, token:, type: :bot, name: nil,
     shard_id: nil, num_shards: nil, ignore_bots: false, ignore_self: true)
-      @client_id, @type, @name = client_id.to_id, type, name || ''
+      @client_id, @name = client_id.to_id, name || ''
 
-      @token = case @type
+      token = case type
         when :bot then "Bot #{token}"
         when :user then "#{token}"
         else raise ArgumentError, 'Invalid bot type'
       end
 
+      @auth = AuthInfo.new(token, type)
+
       @cache = MijDiscord::Cache::BotCache.new(self)
 
       @shard_key = [shard_id, num_shards] if num_shards
-      @gateway = MijDiscord::Core::Gateway.new(self, @token, @shard_key)
+      @gateway = MijDiscord::Core::Gateway.new(self, @auth, @shard_key)
 
       @ignore_bots, @ignore_self, @ignored_ids = ignore_bots, ignore_self, Set.new
 
@@ -180,19 +192,19 @@ module MijDiscord
     def application
       raise 'Cannot get OAuth application for non-bot user' if @type != :bot
 
-      response = MijDiscord::Core::API.oauth_application(@token)
+      response = MijDiscord::Core::API.oauth_application(@auth)
       MijDiscord::Data::Application.new(JSON.parse(response), self)
     end
 
     def invite(invite)
       code = parse_invite_code(invite)
-      response = MijDiscord::Core::API::Invite.resolve(@token, code)
+      response = MijDiscord::Core::API::Invite.resolve(@auth, code)
       MijDiscord::Data::Invite.new(JSON.parse(response), self)
     end
 
     def accept_invite(invite)
       code = parse_invite_code(invite)
-      MijDiscord::Core::API::Invite.accept(@token, code)
+      MijDiscord::Core::API::Invite.accept(@auth, code)
       nil
     end
 
@@ -204,7 +216,7 @@ module MijDiscord
     end
 
     def create_server(name, region = 'eu-central')
-      response = API::Server.create(@token, name, region)
+      response = API::Server.create(@auth, name, region)
       id = JSON.parse(response)['id'].to_i
 
       loop do

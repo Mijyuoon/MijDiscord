@@ -85,11 +85,11 @@ module MijDiscord::Data
     alias_method :color=, :set_color
 
     def delete(reason = nil)
-      MijDiscord::Core::API::Server.delete_role(@bot.token, @server.id, @id, reason)
+      MijDiscord::Core::API::Server.delete_role(@bot.auth, @server.id, @id, reason)
     end
 
     def set_options(name: nil, color: nil, hoist: nil, mentionable: nil, permissions: nil)
-      response = MijDiscord::Core::API::Server.update_role(@bot.token, @server.id, @id,
+      response = MijDiscord::Core::API::Server.update_role(@bot.auth, @server.id, @id,
         name, color&.to_i, hoist, mentionable, permissions&.to_i)
       @server.cache.put_role(JSON.parse(response), update: true)
     end

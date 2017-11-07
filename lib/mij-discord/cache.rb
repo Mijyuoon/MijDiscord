@@ -31,7 +31,7 @@ module MijDiscord::Cache
       return nil if local
 
       begin
-        response = MijDiscord::Core::API::Server.resolve(@bot.token, id)
+        response = MijDiscord::Core::API::Server.resolve(@bot.auth, id)
       rescue RestClient::ResourceNotFound
         return nil
       end
@@ -46,7 +46,7 @@ module MijDiscord::Cache
       return nil if local
 
       begin
-        response = MijDiscord::Core::API::Channel.resolve(@bot.token, id)
+        response = MijDiscord::Core::API::Channel.resolve(@bot.auth, id)
       rescue RestClient::ResourceNotFound
         return nil
       rescue MijDiscord::Errors::NoPermission
@@ -69,7 +69,7 @@ module MijDiscord::Cache
       return @pm_channels[id] if @pm_channels.has_key?(id)
       return nil if local
 
-      response = MijDiscord::Core::API::User.create_pm(@bot.token, id)
+      response = MijDiscord::Core::API::User.create_pm(@bot.auth, id)
       channel = MijDiscord::Data::Channel.create(JSON.parse(response), @bot, nil)
 
       @channels[channel.id] = @pm_channels[id] = channel
@@ -81,7 +81,7 @@ module MijDiscord::Cache
       return nil if local
 
       begin
-        response = MijDiscord::Core::API::User.resolve(@bot.token, id)
+        response = MijDiscord::Core::API::User.resolve(@bot.auth, id)
       rescue RestClient::ResourceNotFound
         return nil
       end
@@ -175,7 +175,7 @@ module MijDiscord::Cache
       return nil if local
 
       begin
-        response = MijDiscord::Core::API::Server.resolve_member(@bot.token, @server.id, id)
+        response = MijDiscord::Core::API::Server.resolve_member(@bot.auth, @server.id, id)
       rescue RestClient::ResourceNotFound
         return nil
       end
@@ -267,7 +267,7 @@ module MijDiscord::Cache
       return nil if local
 
       begin
-        response = MijDiscord::Core::API::Channel.message(@bot.token, @channel.id, key)
+        response = MijDiscord::Core::API::Channel.message(@bot.auth, @channel.id, key)
       rescue RestClient::ResourceNotFound
         return nil
       end

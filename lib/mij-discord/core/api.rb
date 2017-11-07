@@ -8,8 +8,8 @@ module MijDiscord::Core::API
   class << self
     attr_accessor :bot_name
 
-    def user_agent(kind)
-      case kind
+    def user_agent(auth)
+      case auth&.type
         when :bot
           bot_name = @bot_name || 'generic'
           ua_base = "DiscordBot (https://github.com/Mijyuoon/mij-discord, v#{MijDiscord::VERSION})"
@@ -17,14 +17,6 @@ module MijDiscord::Core::API
 
         when :user
           'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0'
-      end
-    end
-
-    def token_type(token)
-      case token
-        when /^Bot (.+)$/ then :bot
-        when /^mfa\.(.+)$/ then :user
-        else :user
       end
     end
 
@@ -66,100 +58,100 @@ module MijDiscord::Core::API
     end
 
     # Logout from the server
-    def logout(token)
+    def logout(auth)
       request(
         :auth_logout,
         nil,
         :post,
         "#{APIBASE_URL}/auth/logout",
         nil,
-        Authorization: token
+        Authorization: auth
       )
     end
 
     # Create an OAuth application
-    def create_oauth_application(token, name, redirect_uris)
+    def create_oauth_application(auth, name, redirect_uris)
       request(
         :oauth2_applications,
         nil,
         :post,
         "#{APIBASE_URL}/oauth2/applications",
         { name: name, redirect_uris: redirect_uris }.to_json,
-        Authorization: token,
+        Authorization: auth,
         content_type: :json
       )
     end
 
     # Change an OAuth application's properties
-    def update_oauth_application(token, name, redirect_uris, description = '', icon = nil)
+    def update_oauth_application(auth, name, redirect_uris, description = '', icon = nil)
       request(
         :oauth2_applications,
         nil,
         :put,
         "#{APIBASE_URL}/oauth2/applications",
         { name: name, redirect_uris: redirect_uris, description: description, icon: icon }.to_json,
-        Authorization: token,
+        Authorization: auth,
         content_type: :json
       )
     end
 
     # Get the bot's OAuth application's information
-    def oauth_application(token)
+    def oauth_application(auth)
       request(
         :oauth2_applications_me,
         nil,
         :get,
         "#{APIBASE_URL}/oauth2/applications/@me",
-        Authorization: token
+        Authorization: auth
       )
     end
 
     # Acknowledge that a message has been received
     # The last acknowledged message will be sent in the ready packet,
     # so this is an easy way to catch up on messages
-    def acknowledge_message(token, channel_id, message_id)
+    def acknowledge_message(auth, channel_id, message_id)
       request(
         :channels_cid_messages_mid_ack,
         nil, # This endpoint is unavailable for bot accounts and thus isn't subject to its rate limit requirements.
         :post,
         "#{APIBASE_URL}/channels/#{channel_id}/messages/#{message_id}/ack",
         nil,
-        Authorization: token
+        Authorization: auth
       )
     end
 
     # Get the gateway to be used
-    def gateway(token)
+    def gateway(auth)
       request(
         :gateway,
         nil,
         :get,
         "#{APIBASE_URL}/gateway",
-        Authorization: token
+        Authorization: auth,
       )
     end
 
     # Validate a token (this request will fail if the token is invalid)
-    def validate_token(token)
+    def validate_token(auth)
       request(
         :auth_login,
         nil,
         :post,
         "#{APIBASE_URL}/auth/login",
         {}.to_json,
-        Authorization: token,
+        Authorization: auth,
         content_type: :json
       )
     end
 
     # Get a list of available voice regions
-    def voice_regions(token)
+    def voice_regions(auth)
       request(
         :voice_regions,
         nil,
         :get,
         "#{APIBASE_URL}/voice/regions",
-        Authorization: token,
+        Authorization: auth,
         content_type: :json
       )
     end
@@ -177,8 +169,7 @@ module MijDiscord::Core::API
       ratelimit_delta, response = nil, nil
 
       if (params = attributes.last).is_a?(Hash)
-        ua_type = token_type(params[:Authorization])
-        params[:user_agent] = user_agent(ua_type)
+        params[:user_agent] = user_agent(params[:Authorization])
         ratelimit_delta = params.delete(:header_bypass_delay)
       end
 

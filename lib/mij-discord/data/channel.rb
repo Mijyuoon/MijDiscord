@@ -152,7 +152,7 @@ module MijDiscord::Data
 
     def set_options(reason = nil, name: nil, topic: nil, nsfw: nil,
     parent: nil, position: nil, bitrate: nil, user_limit: nil, overwrites: nil)
-      response = MijDiscord::Core::API::Channel.update(@bot.token, @id,
+      response = MijDiscord::Core::API::Channel.update(@bot.auth, @id,
         name, topic, nsfw,parent&.to_id, position, bitrate, user_limit, overwrites, reason)
       @server.cache.put_channel(JSON.parse(response), update: true)
     end
@@ -174,7 +174,7 @@ module MijDiscord::Data
         object = Overwrite.new(object, allow: allow_bits, deny: deny_bits)
       end
 
-      MijDiscord::Core::API::Channel.update_permission(@bot.token, @id,
+      MijDiscord::Core::API::Channel.update_permission(@bot.auth, @id,
         object.id, object.allow.bits, object.deny.bits, object.type, reason)
       nil
     end
@@ -185,7 +185,7 @@ module MijDiscord::Data
 
     def delete_overwrite(object, reason = nil)
       raise ArgumentError, 'Invalid overwrite target' unless object.respond_to?(:to_id)
-      MijDiscord::Core::API::Channel.delete_permission(@bot.token, @id,
+      MijDiscord::Core::API::Channel.delete_permission(@bot.auth, @id,
         object.to_id, reason)
       nil
     end
@@ -201,7 +201,7 @@ module MijDiscord::Data
     alias_method :sync_permission_overwrites, :sync_overwrites
 
     def delete(reason = nil)
-      MijDiscord::Core::API::Channel.delete(@bot.token, @id, reason)
+      MijDiscord::Core::API::Channel.delete(@bot.auth, @id, reason)
       @server.cache.remove_channel(@id)
     end
   end
@@ -297,7 +297,7 @@ module MijDiscord::Data
     def send_message(text: '', embed: nil, tts: false)
       raise MijDiscord::Core::Errors::MessageTooLong if text.length > 2000
 
-      response = MijDiscord::Core::API::Channel.create_message(@bot.token, @id,
+      response = MijDiscord::Core::API::Channel.create_message(@bot.auth, @id,
         text, tts, embed&.to_h)
       @cache.put_message(JSON.parse(response))
     end
@@ -305,12 +305,12 @@ module MijDiscord::Data
     def send_file(file, caption: '', tts: false)
       raise MijDiscord::Core::Errors::MessageTooLong if caption.length > 2000
 
-      response = MijDiscord::Core::API::Channel.upload_file(@bot.token, @id, file, caption, tts)
+      response = MijDiscord::Core::API::Channel.upload_file(@bot.auth, @id, file, caption, tts)
       @cache.put_message(JSON.parse(response))
     end
 
     def delete_message(message)
-      MijDiscord::Core::API::Channel.delete_message(@bot.token, @id, message.to_id)
+      MijDiscord::Core::API::Channel.delete_message(@bot.auth, @id, message.to_id)
       @cache.remove_message(message)
     end
 
@@ -319,7 +319,7 @@ module MijDiscord::Data
     end
 
     def message_history(amount, before: nil, after: nil, around: nil)
-      response = MijDiscord::Core::API::Channel.messages(@bot.token, @id,
+      response = MijDiscord::Core::API::Channel.messages(@bot.auth, @id,
         amount, before&.to_id, after&.to_id, around&.to_id)
       JSON.parse(response).map {|m| Message.new(m, @bot) }
     end
@@ -327,7 +327,7 @@ module MijDiscord::Data
     alias_method :history, :message_history
 
     def pinned_messages
-      response = MijDiscord::Core::API::Channel.pinned_messages(@bot.token, @id)
+      response = MijDiscord::Core::API::Channel.pinned_messages(@bot.auth, @id)
       JSON.parse(response).map {|m| Message.new(m, @bot) }
     end
 
@@ -338,18 +338,18 @@ module MijDiscord::Data
       min_snowflake = IDObject.synthesize(two_weeks)
       ids = messages.map(&:to_id).delete_if {|m| m < min_snowflake }
 
-      MijDiscord::Core::API::Channel.bulk_delete_messages(@bot.token, @id, ids)
+      MijDiscord::Core::API::Channel.bulk_delete_messages(@bot.auth, @id, ids)
       ids.each {|m| @cache.remove_message(m) }
       nil
     end
 
     def invites
-      response = MijDiscord::Core::API::Channel.invites(@bot.token, @id)
+      response = MijDiscord::Core::API::Channel.invites(@bot.auth, @id)
       JSON.parse(response).map {|x| Invite.new(x, @bot) }
     end
 
     def make_invite(reason = nil, max_age: 0, max_uses: 0, temporary: false, unique: false)
-      response = MijDiscord::Core::API::Channel.create_invite(@bot.token, @id,
+      response = MijDiscord::Core::API::Channel.create_invite(@bot.auth, @id,
         max_age, max_uses, temporary, unique, reason)
       Invite.new(JSON.parse(response), @bot)
     end
@@ -357,7 +357,7 @@ module MijDiscord::Data
     alias_method :invite, :make_invite
 
     def start_typing
-      MijDiscord::Core::API::Channel.start_typing(@bot.token, @id)
+      MijDiscord::Core::API::Channel.start_typing(@bot.auth, @id)
       nil
     end
 
@@ -365,7 +365,7 @@ module MijDiscord::Data
       raise 'Attempted to create group channel on a non-pm channel' unless pm?
 
       ids = users.map(&:to_id)
-      response = MijDiscord::Core::API::Channel.create_group(@bot.token, @id, ids.shift)
+      response = MijDiscord::Core::API::Channel.create_group(@bot.auth, @id, ids.shift)
       channel = @bot.cache.put_channel(JSON.parse(response))
       channel.add_group_users(ids)
 
@@ -376,7 +376,7 @@ module MijDiscord::Data
       raise 'Attempted to add a user to a non-group channel' unless group?
 
       users.each do |u|
-        MijDiscord::Core::API::Channel.add_group_user(@bot.token, @id, u.to_id)
+        MijDiscord::Core::API::Channel.add_group_user(@bot.auth, @id, u.to_id)
       end
       nil
     end
@@ -385,7 +385,7 @@ module MijDiscord::Data
       raise 'Attempted to remove a user to a non-group channel' unless group?
 
       users.each do |u|
-        MijDiscord::Core::API::Channel.remove_group_user(@bot.token, @id, u.to_id)
+        MijDiscord::Core::API::Channel.remove_group_user(@bot.auth, @id, u.to_id)
       end
       nil
     end
@@ -393,7 +393,7 @@ module MijDiscord::Data
     def leave_group
       raise 'Attempoted to leave a non-group channel' unless group?
 
-      MijDiscord::Core::API::Channel.leave_group(@bot.token, @id)
+      MijDiscord::Core::API::Channel.leave_group(@bot.auth, @id)
       nil
     end
   end

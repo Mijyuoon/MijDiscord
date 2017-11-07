@@ -217,21 +217,21 @@ module MijDiscord::Data
     end
 
     def invites
-      response = MijDiscord::Core::API::Server.invites(@bot.token, @id)
+      response = MijDiscord::Core::API::Server.invites(@bot.auth, @id)
       JSON.parse(response).map {|x| Invite.new(x, @bot) }
     end
 
     def prune_count(days)
       raise ArgumentError, 'Days must be between 1 and 30' unless days.between?(1, 30)
 
-      response = MijDiscord::Core::API::Server.prune_count(@bot.token, @id, days)
+      response = MijDiscord::Core::API::Server.prune_count(@bot.auth, @id, days)
       JSON.parse(response)['pruned']
     end
 
     def prune(days, reason = nil)
       raise ArgumentError, 'Days must be between 1 and 30' unless days.between?(1, 30)
 
-      response = MijDiscord::Core::API::Server.begin_prune(@bot.token, @id, days, reason)
+      response = MijDiscord::Core::API::Server.begin_prune(@bot.auth, @id, days, reason)
       JSON.parse(response)['pruned']
     end
 
@@ -247,55 +247,55 @@ module MijDiscord::Data
       raise ArgumentError, 'Invalid channel type specified' unless CHANNEL_TYPES.has_key?(type)
 
       permissions = permissions.map {|x| x.is_a(Overwrite) ? x.to_hash : x }
-      response = MijDiscord::Core::API::Server.create_channel(@bot.token, @id,
+      response = MijDiscord::Core::API::Server.create_channel(@bot.auth, @id,
         name, CHANNEL_TYPES[type], bitrate, user_limit, permissions, nsfw, reason)
       @cache.put_channel(JSON.parse(response))
     end
 
     def create_role(name, reason = nil, color: 0, hoist: false, mentionable: false, permissions: 104_324_161)
-      response = MijDiscord::Core::API::Server.create_role(@bot.token, @id,
+      response = MijDiscord::Core::API::Server.create_role(@bot.auth, @id,
         name, color.to_i, hoist, mentionable, permissions.to_i, reason)
       @cache.put_role(JSON.parse(response))
     end
 
     def bans
-      response = MijDiscord::Core::API::Server.bans(@bot.token, @id)
+      response = MijDiscord::Core::API::Server.bans(@bot.auth, @id)
       JSON.parse(response).map {|x| @bot.cache.put_user(x['user']) }
     end
 
     def ban(user, message_days = 0, reason = nil)
-      MijDiscord::Core::API::Server.ban_user(@bot.token, @id, user.to_id, message_days, reason)
+      MijDiscord::Core::API::Server.ban_user(@bot.auth, @id, user.to_id, message_days, reason)
       nil
     end
 
     def unban(user, reason = nil)
-      MijDiscord::Core::API::Server.unban_user(@bot.token, @id, user.to_id, reason)
+      MijDiscord::Core::API::Server.unban_user(@bot.auth, @id, user.to_id, reason)
       nil
     end
 
     def kick(user, reason = nil)
-      MijDiscord::Core::API::Server.remove_member(@bot.token, @id, user.to_id, reason)
+      MijDiscord::Core::API::Server.remove_member(@bot.auth, @id, user.to_id, reason)
       nil
     end
 
     def leave
-      MijDiscord::Core::API::User.leave_server(@bot.token, @id)
+      MijDiscord::Core::API::User.leave_server(@bot.auth, @id)
       nil
     end
 
     def delete
-      MijDiscord::Core::API::Server.delete(@bot.token, @id)
+      MijDiscord::Core::API::Server.delete(@bot.auth, @id)
       nil
     end
 
     def set_owner(user, reason = nil)
-      MijDiscord::Core::API::Server.transfer_ownership(@bot.token, @id, user.to_id, reason)
+      MijDiscord::Core::API::Server.transfer_ownership(@bot.auth, @id, user.to_id, reason)
     end
 
     alias_method :owner=, :set_owner
 
     def set_options(reason = nil, name: nil, region: nil, icon: nil, afk_channel: nil, afk_timeout: nil)
-      response = MijDiscord::Core::API::Server.update(@bot.token, @id,
+      response = MijDiscord::Core::API::Server.update(@bot.auth, @id,
         name, region, icon, afk_channel&.to_id, afk_timeout, reason)
       @bot.cache.put_server(JSON.parse(response), update: true)
     end
@@ -310,7 +310,7 @@ module MijDiscord::Data
     def available_regions
       return @voice_regions if @voice_regions
 
-      response = MijDiscord::Core::API::Server.regions(@bot.token, @id)
+      response = MijDiscord::Core::API::Server.regions(@bot.auth, @id)
       @voice_regions = JSON.parse(response).map {|x| VoiceRegion.new(x) }
     end
 

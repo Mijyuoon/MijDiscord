@@ -139,7 +139,7 @@ module MijDiscord::Data
     end
 
     def set_username(name)
-      response = MijDiscord::Core::API::User.update_profile(@bot.token, name, nil)
+      response = MijDiscord::Core::API::User.update_profile(@bot.auth, name, nil)
       update_data(JSON.parse(response))
       nil
     end
@@ -159,7 +159,7 @@ module MijDiscord::Data
         raise ArgumentError, 'Invalid avatar data provided'
       end
 
-      response = MijDiscord::Core::API::User.update_profile(@bot.token, @username, data)
+      response = MijDiscord::Core::API::User.update_profile(@bot.auth, @username, data)
       update_data(JSON.parse(response))
       nil
     end

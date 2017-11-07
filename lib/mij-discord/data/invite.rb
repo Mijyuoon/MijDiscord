@@ -71,7 +71,7 @@ module MijDiscord::Data
     alias_method :eql?, :==
 
     def delete(reason = nil)
-      MijDiscord::Core::API::Invite.delete(@bot.token, @code, reason)
+      MijDiscord::Core::API::Invite.delete(@bot.auth, @code, reason)
     end
 
     alias_method :revoke, :delete
