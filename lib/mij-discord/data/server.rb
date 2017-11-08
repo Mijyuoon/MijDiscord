@@ -364,5 +364,60 @@ module MijDiscord::Data
       return nil unless @embed_enabled
       MijDiscord::Core::API.widget_url(@id, style)
     end
+
+    def search_messages(limit: 25, offset: 0, sort_by: nil, sort_asc: false,
+    nsfw: true, around: 2, content: nil, author: nil, channel: nil, mentions: nil,
+    author_is: nil, author_not: nil, has: nil, has_not: nil, before: nil, after: nil)
+      author = author ? [*author].map(&:to_id) : nil
+      channel = channel ? [*channel].map(&:to_id) : nil
+      mentions = mentions ? [*mentions].map(&:to_id) : nil
+
+      has_not = has_not ? [*has_not].map {|x| "-#{x}" } : []
+      author_not = author_not ? [*author_not].map {|x| "-#{x}" } : []
+
+      has = has_not | (has ? [*has].map(&:to_s) : [])
+      author_is = author_not | (author_is ? [*author_is].map(&:to_s) : [])
+
+      before = IDObject.synthesize(before)
+      after = IDObject.synthesize(after)
+
+      options = {
+        limit: limit,
+        offset: offset,
+        sort_by: sort_by,
+        sort_order: sort_asc ? 'asc' : 'desc',
+        context_size: around,
+        include_nsfw: nsfw,
+        author_id: author,
+        author_type: author_is,
+        channel_id: channel,
+        mentions: mentions,
+        before: before,
+        after: after,
+        content: content,
+        has: has,
+      }.delete_if {|_,v| v.nil? }
+
+      response = MijDiscord::Core::API::Server.search_messages(@bot.auth, @id, options)
+      SearchResults.new(JSON.parse(response), @bot)
+    end
+  end
+
+  class SearchResults
+    ResultData = Struct.new(:result, :context)
+
+    attr_reader :total_count
+
+    attr_reader :messages
+
+    def initialize(data, bot)
+      @total_count = data['total_results']
+
+      @messages = data['messages'].map do |group|
+        context = group.map {|x| Message.new(x, bot) }
+        result = context.delete_at(context.length / 2)
+        ResultData.new(result, context)
+      end
+    end
   end
 end
