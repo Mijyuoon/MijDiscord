@@ -378,8 +378,8 @@ module MijDiscord::Data
       has = has_not | (has ? [*has].map(&:to_s) : [])
       author_is = author_not | (author_is ? [*author_is].map(&:to_s) : [])
 
-      before = IDObject.synthesize(before)
-      after = IDObject.synthesize(after)
+      before = before ? IDObject.synthesize(before) : nil
+      after = after ? IDObject.synthesize(after) : nil
 
       options = {
         limit: limit,
@@ -392,8 +392,8 @@ module MijDiscord::Data
         author_type: author_is,
         channel_id: channel,
         mentions: mentions,
-        before: before,
-        after: after,
+        max_id: before,
+        min_id: after,
         content: content,
         has: has,
       }.delete_if {|_,v| v.nil? }
