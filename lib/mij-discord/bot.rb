@@ -394,7 +394,7 @@ module MijDiscord
           server = @cache.remove_server(data['id'])
 
           if data['unavailable'].eql?(true)
-            MijDiscord::LOGGER.warn('Dispatch') { "Server <#{server.id}> died due to outage" }
+            MijDiscord::LOGGER.warn('Dispatch') { "Server <#{data['id']}> died due to outage" }
             return
           end
 
