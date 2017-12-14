@@ -1,16 +1,18 @@
 # frozen_string_literal: true
 
 module MijDiscord
-      class Bot
-        class AuthInfo
-          attr_reader :token
+  class Bot
+    class AuthInfo
+      attr_reader :id
+
+      attr_reader :token
 
       attr_reader :type
 
       attr_reader :name
 
-      def initialize(token, type, name)
-        @type, @name = type, name
+      def initialize(id, token, type, name)
+        @id, @type, @name = id.to_id, type, name
 
         @token = case type
           when :bot then "Bot #{token}"
@@ -76,10 +78,6 @@ module MijDiscord
 
     UNAVAILABLE_SERVER_TIMEOUT = 10
 
-    attr_reader :name
-
-    attr_reader :client_id
-
     attr_reader :auth
 
     attr_reader :shard_key
@@ -92,8 +90,7 @@ module MijDiscord
 
     def initialize(client_id:, token:, type: :bot, name: nil,
     shard_id: nil, num_shards: nil, ignore_bots: false, ignore_self: true)
-      @client_id = client_id.to_id
-      @auth = AuthInfo.new(token, type, name)
+      @auth = AuthInfo.new(client_id, token, type, name)
 
       @cache = MijDiscord::Cache::BotCache.new(self)
 
@@ -216,7 +213,7 @@ module MijDiscord
     end
 
     def make_invite_url(server: nil, permissions: nil)
-      url = "https://discordapp.com/oauth2/authorize?scope=bot&client_id=#{@client_id}".dup
+      url = "https://discordapp.com/oauth2/authorize?scope=bot&client_id=#{@auth.id}".dup
       url << "&permissions=#{permissions.to_i}" if permissions.respond_to?(:to_i)
       url << "&guild_id=#{server.to_id}" if server.respond_to?(:to_id)
       url
@@ -300,7 +297,7 @@ module MijDiscord
     end
 
     def ignored_user?(user)
-      @ignore_self && user.to_id == @client_id || @ignored_ids.include?(user.to_id)
+      @ignore_self && user.to_id == @auth.id || @ignored_ids.include?(user.to_id)
     end
 
     def update_presence(status: nil, game: nil)
