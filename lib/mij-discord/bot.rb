@@ -379,7 +379,6 @@ module MijDiscord
         when :GUILD_MEMBERS_CHUNK
           server = @cache.get_server(data['guild_id'])
           server.update_members_chunk(data['members'])
-          puts "Chunk(#{server.id}+#{data['members'].length})"
 
         when :GUILD_CREATE
           server = @cache.put_server(data)
