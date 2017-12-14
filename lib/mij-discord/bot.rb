@@ -1,14 +1,30 @@
 # frozen_string_literal: true
 
 module MijDiscord
-  class Bot
-    class AuthInfo
-      attr_reader :token
+      class Bot
+        class AuthInfo
+          attr_reader :token
 
       attr_reader :type
 
-      def initialize(token, type)
-        @token, @type = token, type
+      attr_reader :name
+
+      def initialize(token, type, name)
+        @type, @name = type, name
+
+        @token = case type
+          when :bot then "Bot #{token}"
+          when :user then "#{token}"
+          else raise ArgumentError, 'Invalid token type'
+        end
+      end
+
+      def bot?
+        @type == :bot
+      end
+
+      def user?
+        @type == :user
       end
 
       alias_method :to_s, :token
@@ -60,8 +76,6 @@ module MijDiscord
 
     UNAVAILABLE_SERVER_TIMEOUT = 10
 
-    USER_STATUS = [:online, :idle, :dnd, :invisible, :offline].freeze
-
     attr_reader :name
 
     attr_reader :client_id
@@ -78,15 +92,8 @@ module MijDiscord
 
     def initialize(client_id:, token:, type: :bot, name: nil,
     shard_id: nil, num_shards: nil, ignore_bots: false, ignore_self: true)
-      @client_id, @name = client_id.to_id, name || ''
-
-      token = case type
-        when :bot then "Bot #{token}"
-        when :user then "#{token}"
-        else raise ArgumentError, 'Invalid bot type'
-      end
-
-      @auth = AuthInfo.new(token, type)
+      @client_id = client_id.to_id
+      @auth = AuthInfo.new(token, type, name)
 
       @cache = MijDiscord::Cache::BotCache.new(self)
 
@@ -296,26 +303,26 @@ module MijDiscord
       @ignore_self && user.to_id == @client_id || @ignored_ids.include?(user.to_id)
     end
 
-    def change_status(status: nil, game: nil, url: nil)
+    def update_presence(status: nil, game: nil)
       gateway_check
 
-      status = status.nil? ? @profile.status : USER_STATUS.find(status)
-      raise ArgumentError, "Status '#{status}' is not valid" unless status
-
-      game_obj = case game
-        when false
-          nil
-        when nil
-          {'name' => @profile.game, 'url' => @profile.stream_url, 'type' => @profile.stream_type}
-        else
-          {'name' => game, 'url' => url, 'type' => url ? 1 : 0}
+      status = case status
+        when nil then @profile.status
+        when :online, :idle, :dnd, :online then status
+        else raise ArgumentError, 'Invalid status'
       end
 
-      game_obj&.reject! {|_,v| v.nil? }
-      game_obj = nil if game_obj&.empty?
+      game = case game
+        when nil then @profile.game
+        when false then nil
+        when String, Hash
+          MijDiscord::Data::Game.construct(game)
+        when MijDiscord::Data::Game then game
+        else raise ArgumentError, 'Invalid game'
+      end&.to_hash
 
-      @gateway.send_status_update(status, nil, game_obj, false)
-      @profile.update_presence('status' => status, 'game' => game_obj)
+      @gateway.send_status_update(status, nil, game, false)
+      @profile.update_presence('status' => status, 'game' => game)
       nil
     end
 
@@ -372,6 +379,7 @@ module MijDiscord
         when :GUILD_MEMBERS_CHUNK
           server = @cache.get_server(data['guild_id'])
           server.update_members_chunk(data['members'])
+          puts "Chunk(#{server.id}+#{data['members'].length})"
 
         when :GUILD_CREATE
           server = @cache.put_server(data)
@@ -385,6 +393,10 @@ module MijDiscord
           end
 
           trigger_event(:create_server, self, server)
+
+        when :GUILD_SYNC
+          server = @cache.get_server(data['id'])
+          server.update_synced_data(data)
 
         when :GUILD_UPDATE
           server = @cache.put_server(data, update: true)
@@ -424,17 +436,17 @@ module MijDiscord
 
         when :GUILD_MEMBER_ADD
           server = @cache.get_server(data['guild_id'])
-          member = server.cache.put_member(data)
+          member = server.update_member(data, :add)
           trigger_event(:create_member, self, member, server)
 
         when :GUILD_MEMBER_UPDATE
           server = @cache.get_server(data['guild_id'])
-          member = server.cache.put_member(data, update: true)
+          member = server.update_member(data, :update)
           trigger_event(:update_member, self, member, server)
 
         when :GUILD_MEMBER_REMOVE
           server = @cache.get_server(data['guild_id'])
-          member = server.cache.remove_member(data['user']['id'])
+          member = server.update_member(data, :remove)
           trigger_event(:delete_member, self, member, server)
 
         when :GUILD_ROLE_CREATE
@@ -573,6 +585,11 @@ module MijDiscord
       @gateway.notify_ready
 
       trigger_event(:ready, self)
+
+      if @auth.user?
+        guilds = @cache.list_servers.map(&:id)
+        @gateway.send_request_guild_sync(guilds)
+      end
     end
 
     def trigger_event(name, *args)

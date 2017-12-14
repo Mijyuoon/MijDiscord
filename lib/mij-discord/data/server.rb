@@ -66,7 +66,7 @@ module MijDiscord::Data
 
       @id = data['id'].to_i
       @large = data['large']
-      @members_init = data['member_count']
+      @member_count = data['member_count']
       @members_chunked = 0
 
       @cache = MijDiscord::Cache::ServerCache.new(self, @bot)
@@ -75,15 +75,7 @@ module MijDiscord::Data
 
       data['roles']&.each {|ro| @cache.put_role(ro) }
 
-      data['members']&.each {|mb| @cache.put_member(mb) }
-
-      data['presences']&.each do |pr|
-        next unless pr['user']
-
-        user_id = pr['user']['id'].to_i
-        user = @cache.get_member(user_id, local: true)
-        user.update_presence(pr) if user
-      end
+      update_synced_data(data)
 
       @voice_states = {}
       data['voice_states']&.each {|vs| update_voice_state(vs) }
@@ -146,7 +138,33 @@ module MijDiscord::Data
       @members_chunked += data.length
       data.each {|mb| @cache.put_member(mb) }
 
-      @members_chunked = nil if @members_chunked == @members_init
+      @members_chunked = nil if @members_chunked == @member_count
+    end
+
+    def update_synced_data(data)
+      data['members']&.each {|mb| @cache.put_member(mb, update: true) }
+
+      data['presences']&.each do |pr|
+        next unless pr['user']
+
+        user_id = pr['user']['id'].to_i
+        user = @cache.get_member(user_id, local: true)
+        user.update_presence(pr) if user
+      end
+    end
+
+    def update_member(data, mode)
+      case mode
+        when :add
+          @member_count += 1
+          @cache.put_member(data)
+        when :remove
+          @member_count -= 1
+          key = data['user']['id']
+          @cache.remove_member(key)
+        when :update
+          @cache.put_member(data, update: true)
+      end
     end
 
     def channels

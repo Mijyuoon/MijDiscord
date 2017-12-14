@@ -60,6 +60,10 @@ module MijDiscord::Core
     # **Received**: Returned after a heartbeat was sent to the server. This allows clients to identify and deal with
     # zombie connections that don't dispatch any events anymore.
     HEARTBEAT_ACK = 11
+
+    # **Sent**: [Undocumented] This opcode makes the gateway to send current state of a server. This includes a list
+    # of members and their presences, which mirror the format of GUILD_CREATE event.
+    GUILD_SYNC = 12
   end
 
   # @!visibility private
@@ -238,7 +242,7 @@ module MijDiscord::Core
       send_packet(Opcodes::RESUME, data)
     end
 
-    def send_request_members(server_id, query, limit)
+    def send_request_members(server_id, query = '', limit = 0)
       data = {
         guild_id: server_id,
         query: query,
@@ -246,6 +250,10 @@ module MijDiscord::Core
       }
 
       send_packet(Opcodes::REQUEST_MEMBERS, data)
+    end
+
+    def send_request_guild_sync(guilds)
+      send_packet(Opcodes::GUILD_SYNC, guilds)
     end
 
     def send_packet(opcode, packet)

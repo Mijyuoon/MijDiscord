@@ -14,7 +14,19 @@ module MijDiscord::Core::API::User
       )
     end
 
-    # Get profile data
+    # Get profile data (for userbots only)
+    # Not officially documented, reverse engineered from tracking Discord's network activity
+    def resolve2(auth, user_id)
+      MijDiscord::Core::API.request(
+        :users_uid,
+        nil,
+        :get,
+        "#{MijDiscord::Core::API::APIBASE_URL}/users/#{user_id}/profile",
+        Authorization: auth
+      )
+    end
+
+    # Get current user data
     # https://discordapp.com/developers/docs/resources/user#get-current-user
     def profile(auth)
       MijDiscord::Core::API.request(

@@ -1,6 +1,112 @@
 # frozen_string_literal: true
 
 module MijDiscord::Data
+  class Game
+    PLAYING_TYPE = [
+      :playing,
+      :streaming,
+      :listening,
+      :watching,
+    ].freeze
+
+    attr_reader :name
+
+    attr_reader :url
+
+    attr_reader :details
+
+    attr_reader :state
+
+    attr_reader :start_time
+
+    attr_reader :end_time
+
+    attr_reader :application
+
+    attr_reader :large_image
+
+    attr_reader :large_text
+
+    attr_reader :small_image
+
+    attr_reader :small_text
+
+    def type
+      PLAYING_TYPE[@type]
+    end
+
+    def initialize(data)
+      @type = data['type']
+      @name = data['name']
+      @url = data['url']
+      @details = data['details']
+      @state = data['state']
+
+      if (start_time = data.dig('timestamps', 'start'))
+        @start_time = Time.at(start_time).utc
+      end
+      if (end_time = data.dig('timestamps', 'end'))
+        @end_time = Time.at(end_time).utc
+      end
+
+      if (assets = data['assets'])
+        @large_image = assets['large_image']
+        @large_text = assets['large_text']
+        @small_image = assets['small_image']
+        @small_text = assets['small_text']
+      end
+    end
+
+    def to_hash
+      self.class.construct({
+        start_time: @start_time,
+        end_time: @end_time,
+
+        large_image: @large_image,
+        large_text: @large_text,
+        small_image: @small_image,
+        small_text: @small_text,
+
+        type: @type,
+        name: @name,
+        url: @url,
+        details: @details,
+        state: @state,
+      })
+    end
+
+    def self.construct(data)
+      data = {name: data} if data.is_a?(String)
+
+      times = {
+        start: data[:start_time]&.to_i,
+        end: data[:end_time]&.to_i,
+      }.delete_if {|_,v| v.nil? }
+
+      assets = {
+        large_image: data[:large_image],
+        large_text: data[:large_text],
+        small_image: data[:small_image],
+        small_text: data[:small_text],
+      }.delete_if {|_,v| v.nil? }
+
+      type = PLAYING_TYPE.index(data[:type])
+
+      game = {
+        type: type || 0,
+        name: data[:name],
+        url: data[:url],
+        details: data[:details],
+        state: data[:state],
+
+        timestamps: times.empty? ? nil : times,
+        assets: assets.empty? ? nil : assets,
+      }.delete_if {|_,v| v.nil? }
+
+      game
+    end
+  end
+
   class User
     include IDObject
 
@@ -21,18 +127,19 @@ module MijDiscord::Data
 
     attr_reader :game
 
-    attr_reader :stream_url
-
-    attr_reader :stream_type
+    attr_reader :extra
 
     def initialize(data, bot)
       @bot = bot
+
+      # Kludge for User::resolve2 API call
+      data = data['user'] if data['user'].is_a?(Hash)
 
       @id = data['id'].to_i
       @bot_account = !!data['bot']
       update_data(data)
 
-      @status = :offline
+      @status, @game = :offline, nil
 
       @roles = {}
     end
@@ -47,11 +154,9 @@ module MijDiscord::Data
       @status = presence['status'].to_sym
 
       if (game = presence['game'])
-        @game = game['name']
-        @stream_url = game['url']
-        @stream_type = game['type']
+        @game = Game.new(game)
       else
-        @game = @stream_url = @stream_type = nil
+        @game = nil
       end
     end
 
@@ -126,6 +231,8 @@ module MijDiscord::Data
       return MijDiscord::Core::API::User.default_avatar(@discriminator) unless @avatar_id
       MijDiscord::Core::API::User.avatar_url(@id, @avatar_id, format)
     end
+
+    alias_method :avatar, :avatar_url
   end
 
   class Profile < User

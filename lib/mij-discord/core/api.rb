@@ -6,12 +6,10 @@ module MijDiscord::Core::API
   CDN_URL = 'https://cdn.discordapp.com'
 
   class << self
-    attr_accessor :bot_name
-
     def user_agent(auth)
       case auth&.type
         when :bot
-          bot_name = @bot_name || 'generic'
+          bot_name = auth.name || 'generic'
           ua_base = "DiscordBot (https://github.com/Mijyuoon/mij-discord, v#{MijDiscord::VERSION})"
           "#{ua_base} mij-discord/#{MijDiscord::VERSION} #{bot_name}"
 
