@@ -41,6 +41,7 @@ module MijDiscord::Data
       @url = data['url']
       @details = data['details']
       @state = data['state']
+      @application = data['application_id']
 
       if (start_time = data.dig('timestamps', 'start'))
         @start_time = Time.at(start_time).utc
@@ -72,6 +73,7 @@ module MijDiscord::Data
         url: @url,
         details: @details,
         state: @state,
+        application: @application,
       })
     end
 
@@ -98,6 +100,7 @@ module MijDiscord::Data
         url: data[:url],
         details: data[:details],
         state: data[:state],
+        application_id: data[:application],
 
         timestamps: times.empty? ? nil : times,
         assets: assets.empty? ? nil : assets,
