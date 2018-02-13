@@ -52,6 +52,10 @@ module MijDiscord::Data
     attr_reader :revoked
     alias_method :revoked?, :revoked
 
+    attr_reader :online_members
+
+    attr_reader :total_members
+
     def initialize(data, bot)
       @bot = bot
 
@@ -60,6 +64,9 @@ module MijDiscord::Data
 
       @code, @max_uses = data['code'], data['uses']
       @temporary, @revoked = data['temporary'], data['revoked']
+
+      @online_members = data['approximate_presence_count']
+      @total_members = data['approximate_member_count']
 
       @inviter = data['inviter'] ? @bot.cache.put_user(data['inviter']) : nil
     end

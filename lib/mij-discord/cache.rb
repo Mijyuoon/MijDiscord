@@ -270,7 +270,10 @@ module MijDiscord::Cache
       return nil if local
 
       begin
-        response = MijDiscord::Core::API::Channel.message(@bot.auth, @channel.id, key)
+        response = case @bot.auth.type
+          when :bot then MijDiscord::Core::API::Channel.message(@bot.auth, @channel.id, key)
+          when :user then MijDiscord::Core::API::Channel.messages(@bot.auth, @channel.id, 1, nil, nil, key)
+        end
       rescue RestClient::ResourceNotFound
         return nil
       end

@@ -4,12 +4,13 @@ module MijDiscord::Core::API::Invite
   class << self
     # Resolve an invite
     # https://discordapp.com/developers/docs/resources/invite#get-invite
-    def resolve(auth, invite_code)
+    def resolve(auth, invite_code, with_counts = false)
+      counts = with_counts ? '?with_counts=true' : ''
       MijDiscord::Core::API.request(
         :invite_code,
         nil,
         :get,
-        "#{MijDiscord::Core::API::APIBASE_URL}/invites/#{invite_code}",
+        "#{MijDiscord::Core::API::APIBASE_URL}/invites/#{invite_code}#{counts}",
         Authorization: auth
       )
     end

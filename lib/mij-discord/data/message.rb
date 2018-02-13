@@ -35,7 +35,7 @@ module MijDiscord::Data
     attr_reader :tts
     alias_method :tts?, :tts
 
-    # attr_reader :nonce
+    attr_reader :nonce
 
     attr_reader :edited
     alias_method :edited?, :edited
@@ -48,10 +48,12 @@ module MijDiscord::Data
     def initialize(data, bot)
       @bot = bot
 
+      data = data.first if data.is_a?(Array)
+
       @id = data['id'].to_i
       @channel = @bot.channel(data['channel_id'])
 
-      # @nonce = data['nonce']
+      @nonce = data['nonce']
       @webhook_id = data['webhook_id']&.to_i
 
       if (author = data['author'])

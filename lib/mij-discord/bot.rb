@@ -202,7 +202,7 @@ module MijDiscord
 
     def invite(invite)
       code = parse_invite_code(invite)
-      response = MijDiscord::Core::API::Invite.resolve(@auth, code)
+      response = MijDiscord::Core::API::Invite.resolve(@auth, code, true)
       MijDiscord::Data::Invite.new(JSON.parse(response), self)
     end
 
