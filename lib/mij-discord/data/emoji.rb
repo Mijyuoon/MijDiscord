@@ -10,11 +10,14 @@ module MijDiscord::Data
 
     attr_reader :roles
 
+    attr_reader :animated
+
     def initialize(data, bot, server)
       @bot, @server = bot, server
 
       @id = data['id'].to_i
       @name = data['name']
+      @animated = !!data['animated']
 
       @roles = []
       if @server && (roles = data['roles'])
@@ -23,7 +26,8 @@ module MijDiscord::Data
     end
 
     def mention
-      "<:#{@name}:#{@id}>"
+      a = @animated ? 'a' : ''
+      "<#{a}:#{@name}:#{@id}>"
     end
 
     alias_method :to_s, :mention
@@ -32,7 +36,8 @@ module MijDiscord::Data
       @id.zero? ? @name : "#{@name}:#{@id}"
     end
 
-    def icon_url(format = :png)
+    def icon_url(format = nil)
+      format = @animated ? :gif : :png if format.nil?
       MijDiscord::Core::API.emoji_icon_url(@id, format)
     end
   end

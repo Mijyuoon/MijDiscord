@@ -255,7 +255,7 @@ module MijDiscord
             role = sv.role($1)
             return role if role
           end
-        when /^<:\w+:(\d+)>$/
+        when /^<a?:\w+:(\d+)>$/
           emoji = emoji(server_id, $1)
           return emoji if emoji
 
