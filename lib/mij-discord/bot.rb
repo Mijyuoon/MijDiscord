@@ -255,14 +255,17 @@ module MijDiscord
             role = sv.role($1)
             return role if role
           end
-        when /^<a?:\w+:(\d+)>$/
-          emoji = emoji(server_id, $1)
+        when /^<(a?):(\w+):(\d+)>$/
+          emoji = emoji(server_id, $3)
           return emoji if emoji
 
           servers.each do |sv|
-            emoji = sv.emoji($1)
+            emoji = sv.emoji($3)
             return emoji if emoji
           end
+
+          em_data = { 'id' => $3.to_i, 'name' => $2, 'animated' => !$1.empty? }
+          MijDiscord::Data::Emoji.new(em_data, self, nil)
       end
     end
 
