@@ -83,12 +83,6 @@ module MijDiscord::Core::API::Channel
         Authorization: auth,
         content_type: :json
       )
-    rescue RestClient::BadRequest => e
-      parsed = JSON.parse(e.response.body)
-      if (content = parsed['content']).is_a?(Array) && content.first == 'Must be 2000 or fewer characters long.'
-        raise MijDiscord::Core::Errors::MessageTooLong, "Message over the character limit (#{message.length} > 2000)"
-      end
-      raise
     end
 
     # Send a file as a message to a channel

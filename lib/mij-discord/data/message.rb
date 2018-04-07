@@ -116,8 +116,17 @@ module MijDiscord::Data
     end
 
     def edit(text: '', embed: nil)
-      response = MijDiscord::Core::API::Channel.edit_message(@bot.auth, @channel.id, @id,
-        text, [], embed&.to_h)
+      raise MijDiscord::Errors::MessageTooLong if text.length > 2000
+
+      embed = case embed
+        when nil then nil
+        when Hash
+          MijDiscord::Data::Embed.construct(embed)
+        when MijDiscord::Data::Embed then embed
+        else raise ArgumentError, 'Invalid embed'
+      end&.to_hash
+
+      response = MijDiscord::Core::API::Channel.edit_message(@bot.auth, @channel.id, @id, text, [], embed)
       @channel.cache.put_message(JSON.parse(response), update: true)
     end
 

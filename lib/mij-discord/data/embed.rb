@@ -46,6 +46,54 @@ module MijDiscord::Data
 
       @fields = data['fields']&.map {|x| EmbedField.new(x) }
     end
+
+    def to_hash
+      self.class.construct({
+        type: @type,
+        title: @title,
+        description: @description,
+        url: @url,
+
+        color: @color,
+        timestamp: @timestamp,
+
+        footer: @footer,
+        thumbnail: @thumbnail,
+
+        image: @image,
+        video: @video,
+
+        author: @author,
+        provider: @provider,
+
+        fields: @fields,
+      })
+    end
+
+    def self.construct(data)
+      embed = {
+        type: data[:type] || :rich,
+        title: data[:title],
+        description: data[:description],
+        url: data[:url],
+
+        color: data[:color]&.to_i,
+        timestamp: data[:timestamp]&.iso8601,
+
+        footer: data[:footer]&.to_hash,
+        thumbnail: data[:thumbnail]&.to_hash,
+
+        image: data[:image]&.to_hash,
+        video: data[:video]&.to_hash,
+
+        author: data[:author]&.to_hash,
+        provider: data[:provider]&.to_hash,
+
+        fields: data[:fields]&.map(&:to_hash),
+      }.delete_if {|_,v| v.nil? }
+
+      embed
+    end
   end
 
   class EmbedFooter
@@ -58,6 +106,13 @@ module MijDiscord::Data
     def initialize(data)
       @text, @icon_url = data['text'], data['icon_url']
       @proxy_icon_url =  data['proxy_icon_url']
+    end
+
+    def to_hash
+      {
+        text: @text,
+        icon_url: @icon_url,
+      }.delete_if {|_,v| v.nil? }
     end
   end
 
@@ -74,6 +129,14 @@ module MijDiscord::Data
       @url, @width, @height = data['url'], data['width'], data['height']
       @proxy_url = data['proxy_url']
     end
+
+    def to_hash
+      {
+        url: @url,
+        width: @width,
+        height: @height,
+      }.delete_if {|_,v| v.nil? }
+    end
   end
 
   class EmbedAuthor
@@ -89,6 +152,14 @@ module MijDiscord::Data
       @name, @url, @icon_url = data['name'], data['url'], data['icon_url']
       @proxy_icon_url = data['proxy_icon_url']
     end
+
+    def to_hash
+      {
+        name: @name,
+        url: @url,
+        icon_url: @icon_url,
+      }.delete_if {|_,v| v.nil? }
+    end
   end
 
   class EmbedProvider
@@ -98,6 +169,13 @@ module MijDiscord::Data
 
     def initialize(data)
       @name, @url = data['name'], data['url']
+    end
+
+    def to_hash
+      {
+        name: @name,
+        url: @url,
+      }.delete_if {|_,v| v.nil? }
     end
   end
 
@@ -110,6 +188,14 @@ module MijDiscord::Data
 
     def initialize(data)
       @name, @value, @inline = data['name'], data['value'], data['inline']
+    end
+
+    def to_hash
+      {
+        name: @name,
+        value: @value,
+        inline: @inline,
+      }.delete_if {|_,v| v.nil? }
     end
   end
 end

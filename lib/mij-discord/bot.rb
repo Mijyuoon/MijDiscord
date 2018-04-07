@@ -57,6 +57,7 @@ module MijDiscord
       create_channel: MijDiscord::Events::CreateChannel,
       update_channel: MijDiscord::Events::UpdateChannel,
       delete_channel: MijDiscord::Events::DeleteChannel,
+      update_webhooks: MijDiscord::Events::UpdateWebhooks,
       add_recipient: MijDiscord::Events::AddRecipient,
       remove_recipient: MijDiscord::Events::RemoveRecipient,
 
@@ -194,7 +195,7 @@ module MijDiscord
     end
 
     def application
-      raise 'Cannot get OAuth application for non-bot user' if @type != :bot
+      raise 'Cannot get OAuth application for non-bot user' unless @auth.bot?
 
       response = MijDiscord::Core::API.oauth_application(@auth)
       MijDiscord::Data::Application.new(JSON.parse(response), self)
@@ -423,6 +424,10 @@ module MijDiscord
           channel = @cache.remove_channel(data['id'])
           trigger_event(:delete_channel, self, channel)
 
+        when :WEBHOOKS_UPDATE
+          channel = @cache.get_channel(data['channel_id'], nil)
+          trigger_event(:update_webhooks, self, channel)
+
         when :CHANNEL_RECIPIENT_ADD
           channel = @cache.get_channel(data['channel_id'], nil)
           recipient = channel.update_recipient(add: data['user'])
@@ -537,7 +542,7 @@ module MijDiscord
         when :TYPING_START
           begin
             trigger_event(:start_typing, self, data)
-          rescue MijDiscord::Core::Errors::NoPermission
+          rescue MijDiscord::Errors::Forbidden
             # Ignoring the channel we can't access
             # Why is this even sent? :S
           end

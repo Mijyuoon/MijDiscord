@@ -101,7 +101,7 @@ module MijDiscord::Data
           id = data['afk_channel_id'].to_i
           @afk_channel = @bot.channel(id, self)
         end
-      rescue MijDiscord::Errors::NoPermission
+      rescue MijDiscord::Errors::Forbidden
         @afk_channel = nil
       end
     end
@@ -237,6 +237,11 @@ module MijDiscord::Data
     def invites
       response = MijDiscord::Core::API::Server.invites(@bot.auth, @id)
       JSON.parse(response).map {|x| Invite.new(x, @bot) }
+    end
+
+    def webhooks
+      response = MijDiscord::Core::API::Server.webhooks(@bot.auth, @id)
+      JSON.parse(response).map {|x| Webhook.new(x, @bot) }
     end
 
     def prune_count(days)

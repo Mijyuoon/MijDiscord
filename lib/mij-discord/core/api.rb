@@ -154,10 +154,21 @@ module MijDiscord::Core::API
       )
     end
 
-    def raw_request(type, attributes)
+    def raw_request(type, *attributes)
       RestClient.send(type, *attributes)
-    rescue RestClient::Forbidden
-      raise MijDiscord::Core::Errors::NoPermission
+    rescue RestClient::RequestFailed => e
+      # Holy fuck, Discord…
+      if (klazz = MijDiscord::Errors::HTTP_ERRORS[e.http_code])
+        data = JSON.parse(e.response)
+        if data['message'] || data['code']
+          raise klazz.new(data['code'], data['message'], e.response)
+        elsif (error = (data['content'] || data['embed']).join)
+          if MijDiscord::Errors::MessageTooLong.match_pattern?(error)
+            raise MijDiscord::Errors::MessageTooLong.new(error, e.response)
+          end
+        end
+      end
+      raise
     rescue RestClient::BadGateway
       MijDiscord::LOGGER.warn('HTTP') { 'Received 502 Bad Gateway during API request' }
       retry
@@ -179,7 +190,7 @@ module MijDiscord::Core::API
         mutex_wait(key_mutex)
         mutex_wait(global_mutex) if global_mutex.locked?
 
-        response = raw_request(type, attributes)
+        response = raw_request(type, *attributes)
       rescue RestClient::TooManyRequests => e
         response = e.response
 

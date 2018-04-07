@@ -236,6 +236,22 @@ module MijDiscord::Data
     end
 
     alias_method :avatar, :avatar_url
+
+    class << self
+      def process_avatar(data, format = :png, empty = false)
+        if data.is_a?(String)
+          "data:image/#{format};base64,#{data}"
+        elsif data.respond_to?(:read)
+          data.binmode if data.respond_to?(:binmode)
+          data = Base64.strict_encode64(data.read)
+          "data:image/#{format};base64,#{data}"
+        elsif empty && %i[none empty].include?(data)
+          nil
+        else
+          raise ArgumentError, 'Invalid avatar data provided'
+        end
+      end
+    end
   end
 
   class Profile < User
@@ -259,17 +275,8 @@ module MijDiscord::Data
     alias_method :name=, :set_username
 
     def set_avatar(data, format = :png)
-      if data.is_a?(String)
-        data = "data:image/#{format};base64,#{data}"
-      elsif data.respond_to?(:read)
-        data.binmode if data.respond_to?(:binmode)
-        data = Base64.strict_encode64(data.read)
-        data = "data:image/#{format};base64,#{data}"
-      else
-        raise ArgumentError, 'Invalid avatar data provided'
-      end
-
-      response = MijDiscord::Core::API::User.update_profile(@bot.auth, @username, data)
+      data = User.process_avatar(data, format, false)
+      response = MijDiscord::Core::API::User.update_profile(@bot.auth, nil, data)
       update_data(JSON.parse(response))
       nil
     end

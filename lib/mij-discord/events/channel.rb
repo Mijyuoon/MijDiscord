@@ -30,6 +30,8 @@ module MijDiscord::Events
 
   class DeleteChannel < Channel; end
 
+  class UpdateWebhooks < Channel; end
+
   class Recipient < Channel
     attr_reader :recipient
     alias_method :user, :recipient

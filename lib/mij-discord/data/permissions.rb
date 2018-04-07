@@ -71,6 +71,8 @@ module MijDiscord::Data
     end
 
     alias_method :bits=, :set_bits
+
+
   end
 
   class Overwrite

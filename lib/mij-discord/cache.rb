@@ -32,7 +32,7 @@ module MijDiscord::Cache
 
       begin
         response = MijDiscord::Core::API::Server.resolve(@bot.auth, id)
-      rescue RestClient::ResourceNotFound
+      rescue MijDiscord::Errors::NotFound
         return nil
       end
 
@@ -42,14 +42,14 @@ module MijDiscord::Cache
     def get_channel(key, server, local: false)
       id = key&.to_id
       return @channels[id] if @channels.has_key?(id)
-      raise MijDiscord::Errors::NoPermission if @restricted_channels[id]
+      raise MijDiscord::Errors::Forbidden if @restricted_channels[id]
       return nil if local
 
       begin
         response = MijDiscord::Core::API::Channel.resolve(@bot.auth, id)
-      rescue RestClient::ResourceNotFound
+      rescue MijDiscord::Errors::NotFound
         return nil
-      rescue MijDiscord::Errors::NoPermission
+      rescue MijDiscord::Errors::Forbidden
         @restricted_channels[id] = true
         raise
       end
@@ -85,7 +85,7 @@ module MijDiscord::Cache
           when :bot then MijDiscord::Core::API::User.resolve(@bot.auth, id)
           when :user then MijDiscord::Core::API::User.resolve2(@bot.auth, id)
         end
-      rescue RestClient::ResourceNotFound
+      rescue MijDiscord::Errors::NotFound
         return nil
       end
 
@@ -179,7 +179,7 @@ module MijDiscord::Cache
 
       begin
         response = MijDiscord::Core::API::Server.resolve_member(@bot.auth, @server.id, id)
-      rescue RestClient::ResourceNotFound
+      rescue MijDiscord::Errors::NotFound
         return nil
       end
 
@@ -274,7 +274,7 @@ module MijDiscord::Cache
           when :bot then MijDiscord::Core::API::Channel.message(@bot.auth, @channel.id, key)
           when :user then MijDiscord::Core::API::Channel.messages(@bot.auth, @channel.id, 1, nil, nil, key)
         end
-      rescue RestClient::ResourceNotFound
+      rescue MijDiscord::Errors::NotFound
         return nil
       end
 

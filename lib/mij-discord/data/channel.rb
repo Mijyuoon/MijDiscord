@@ -295,16 +295,19 @@ module MijDiscord::Data
     alias_method :nsfw=, :set_nsfw
 
     def send_message(text: '', embed: nil, tts: false)
-      raise MijDiscord::Core::Errors::MessageTooLong if text.length > 2000
+      embed = case embed
+        when nil then nil
+        when Hash
+          Embed.construct(embed)
+        when Embed then embed
+        else raise ArgumentError, 'Invalid embed'
+      end&.to_hash
 
-      response = MijDiscord::Core::API::Channel.create_message(@bot.auth, @id,
-        text, tts, embed&.to_h)
+      response = MijDiscord::Core::API::Channel.create_message(@bot.auth, @id, text, tts, embed)
       @cache.put_message(JSON.parse(response))
     end
 
     def send_file(file, caption: '', tts: false)
-      raise MijDiscord::Core::Errors::MessageTooLong if caption.length > 2000
-
       response = MijDiscord::Core::API::Channel.upload_file(@bot.auth, @id, file, caption, tts)
       @cache.put_message(JSON.parse(response))
     end
@@ -348,6 +351,11 @@ module MijDiscord::Data
       JSON.parse(response).map {|x| Invite.new(x, @bot) }
     end
 
+    def webhooks
+      response = MijDiscord::Core::API::Channel.webhooks(@bot.auth, @id)
+      JSON.parse(response).map {|x| Webhook.new(x, @bot) }
+    end
+
     def make_invite(reason = nil, max_age: 0, max_uses: 0, temporary: false, unique: false)
       response = MijDiscord::Core::API::Channel.create_invite(@bot.auth, @id,
         max_age, max_uses, temporary, unique, reason)
@@ -355,6 +363,14 @@ module MijDiscord::Data
     end
 
     alias_method :invite, :make_invite
+
+    def make_webhook(reason = nil, name:, avatar: :empty, format: :png)
+      avatar = User.process_avatar(avatar, format, true)
+      response = MijDiscord::Core::API::Channel.create_webhook(@bot.auth, @id, name, avatar, reason)
+      Webhook.new(JSON.parse(response), @bot)
+    end
+
+    alias_method :webhook, :make_webhook
 
     def start_typing
       MijDiscord::Core::API::Channel.start_typing(@bot.auth, @id)
