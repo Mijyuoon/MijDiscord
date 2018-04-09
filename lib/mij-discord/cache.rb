@@ -147,6 +147,10 @@ module MijDiscord::Cache
     def remove_user(key)
       @users.delete(key&.to_id)
     end
+
+    def inspect
+      MijDiscord.make_inspect(self)
+    end
   end
 
   class ServerCache
@@ -248,6 +252,10 @@ module MijDiscord::Cache
 
       channel
     end
+
+    def inspect
+      MijDiscord.make_inspect(self)
+    end
   end
 
   class ChannelCache
@@ -299,6 +307,10 @@ module MijDiscord::Cache
 
     def remove_message(key)
       @messages.delete(key&.to_id)
+    end
+
+    def inspect
+      MijDiscord.make_inspect(self)
     end
   end
 end

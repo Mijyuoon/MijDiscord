@@ -15,6 +15,10 @@ module MijDiscord::Data
       @name = data['name']
       @type = data['type']
     end
+
+    def inspect
+      MijDiscord.make_inspect(self, :id, :name, :type)
+    end
   end
 
   class InviteServer
@@ -30,6 +34,10 @@ module MijDiscord::Data
       @id = data['id'].to_i
       @name = data['name']
       @splash_hash = data['splash_hash']
+    end
+
+    def inspect
+      MijDiscord.make_inspect(self, :id, :name)
     end
   end
 
@@ -85,6 +93,11 @@ module MijDiscord::Data
 
     def invite_url
       "https://discord.gg/#{@code}"
+    end
+
+    def inspect
+      MijDiscord.make_inspect(self,
+        :code, :channel, :server, :max_uses, :temporary, :revoked, :inviter)
     end
   end
 end

@@ -31,6 +31,11 @@ module MijDiscord::Data
       @self_mute = data.fetch('self_mute', @self_mute)
       @self_deaf = data.fetch('self_deaf', @self_deaf)
     end
+
+    def inspect
+      MijDiscord.make_inspect(self,
+        :user, :mute, :deaf, :self_mute, :self_deaf, :voice_channel)
+    end
   end
 
   class VoiceRegion
@@ -63,6 +68,12 @@ module MijDiscord::Data
       @optimal = data['optimal']
       @deprecated = data['deprecated']
       @custom = data['custom']
+    end
+
+    def inspect
+      MijDiscord.make_inspect(self,
+        :id, :name, :vip, :optimal, :deprecated, :custom,
+        :sample_hostname, :sample_port)
     end
   end
 end

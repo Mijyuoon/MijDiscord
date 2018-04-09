@@ -101,6 +101,10 @@ module MijDiscord::Data
       wait ? Message.new(JSON.parse(response), @bot) : nil
     end
 
+    def inspect
+      MijDiscord.make_inspect(self, :id, :name, :channel, :owner)
+    end
+
     private
 
     def update_webhook(reason, **data)

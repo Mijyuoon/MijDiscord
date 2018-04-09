@@ -17,4 +17,13 @@ module MijDiscord
 
     "[#{sev}] [#{time}] #{prg.upcase}: #{text}\n"
   end
+
+  def self.make_inspect(obj, *vars)
+    data = [obj.class.to_s.split('::').last]
+    data += vars.map do |x|
+      value = obj.instance_variable_get(:"@#{x}")
+      "#{x}=#{value.inspect}"
+    end
+    %(#<#{data.join(' ')}>)
+  end
 end

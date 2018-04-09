@@ -30,5 +30,9 @@ module MijDiscord::Data
       return nil if @icon_id.nil?
       MijDiscord::Core::API.app_icon_url(@id, @icon_id, format)
     end
+
+    def inspect
+      MijDiscord.make_inspect(self, :id, :name, :description, :flags)
+    end
   end
 end

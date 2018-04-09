@@ -40,6 +40,10 @@ module MijDiscord::Data
       format = @animated ? :gif : :png if format.nil?
       MijDiscord::Core::API.emoji_icon_url(@id, format)
     end
+
+    def inspect
+      MijDiscord.make_inspect(self, :id, :name, :animated)
+    end
   end
 
   class Reaction
@@ -58,6 +62,10 @@ module MijDiscord::Data
 
       @id = data['emoji']['id']&.to_i
       @name = data['emoji']['name']
+    end
+
+    def inspect
+      MijDiscord.make_inspect(self, :id, :name, :count, :me)
     end
   end
 end

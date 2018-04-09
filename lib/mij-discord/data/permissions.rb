@@ -79,6 +79,10 @@ module MijDiscord::Data
     def flags
       Permissions.flags(@bits)
     end
+
+    def inspect
+      %(#<Permissions #{flags.to_a}>)
+    end
   end
 
   class Overwrite
@@ -124,6 +128,10 @@ module MijDiscord::Data
 
     def to_hash
       { id: @id, type: @type, allow: @allow.bits, deny: @deny.bits }
+    end
+
+    def inspect
+      MijDiscord.make_inspect(self, :id, :type, :allow, :deny)
     end
   end
 end

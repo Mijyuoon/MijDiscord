@@ -47,6 +47,12 @@ module MijDiscord::Data
       @fields = data['fields']&.map {|x| EmbedField.new(x) }
     end
 
+    def inspect
+      MijDiscord.make_inspect(self,
+        :type, :title, :description, :url, :color, :timestamp, :image,
+        :video, :thumbnail, :footer, :author, :provider, :fields)
+    end
+
     def to_hash
       self.class.construct({
         type: @type,
@@ -108,6 +114,10 @@ module MijDiscord::Data
       @proxy_icon_url =  data['proxy_icon_url']
     end
 
+    def inspect
+      MijDiscord.make_inspect(self, :text, :icon_url)
+    end
+
     def to_hash
       {
         text: @text,
@@ -128,6 +138,10 @@ module MijDiscord::Data
     def initialize(data)
       @url, @width, @height = data['url'], data['width'], data['height']
       @proxy_url = data['proxy_url']
+    end
+
+    def inspect
+      MijDiscord.make_inspect(self, :url, :width, :height)
     end
 
     def to_hash
@@ -153,6 +167,10 @@ module MijDiscord::Data
       @proxy_icon_url = data['proxy_icon_url']
     end
 
+    def inspect
+      MijDiscord.make_inspect(self, :name, :url, :icon_url)
+    end
+
     def to_hash
       {
         name: @name,
@@ -169,6 +187,10 @@ module MijDiscord::Data
 
     def initialize(data)
       @name, @url = data['name'], data['url']
+    end
+
+    def inspect
+      MijDiscord.make_inspect(self, :name, :url)
     end
 
     def to_hash
@@ -188,6 +210,10 @@ module MijDiscord::Data
 
     def initialize(data)
       @name, @value, @inline = data['name'], data['value'], data['inline']
+    end
+
+    def inspect
+      MijDiscord.make_inspect(self, :name, :value, :inline)
     end
 
     def to_hash

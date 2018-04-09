@@ -93,5 +93,10 @@ module MijDiscord::Data
         name, color&.to_i, hoist, mentionable, permissions&.to_i)
       @server.cache.put_role(JSON.parse(response), update: true)
     end
+
+    def inspect
+      MijDiscord.make_inspect(self,
+        :id, :name, :color, :position, :hoist, :mentionable, :managed, :permissions)
+    end
   end
 end

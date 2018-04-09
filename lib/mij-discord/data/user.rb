@@ -77,6 +77,12 @@ module MijDiscord::Data
       })
     end
 
+    def inspect
+      MijDiscord.make_inspect(self,
+        :type, :name, :url, :details, :state, :start_time, :end_time,
+        :application, :large_image, :large_text, :small_image, :small_text)
+    end
+
     def self.construct(data)
       data = {name: data} if data.is_a?(String)
 
@@ -236,6 +242,11 @@ module MijDiscord::Data
     end
 
     alias_method :avatar, :avatar_url
+
+    def inspect
+      MijDiscord.make_inspect(self,
+        :id, :username, :discriminator, :avatar_id, :bot_account)
+    end
 
     class << self
       def process_avatar(data, format = :png, empty = false)

@@ -31,7 +31,7 @@ module MijDiscord::Data
   end
 
   module PermissionObject
-
+    # TODO: Figure out what this was for
   end
 
   class ColorRGB
@@ -60,6 +60,10 @@ module MijDiscord::Data
 
     def to_hex
       '%06x' % @value
+    end
+
+    def inspect
+      %(#<ColorRGB ##{to_hex}>)
     end
   end
 end

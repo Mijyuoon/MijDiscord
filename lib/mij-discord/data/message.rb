@@ -181,6 +181,12 @@ module MijDiscord::Data
       MijDiscord::Core::API::Channel.delete_message(@bot.auth, @channel.id, @id)
       nil
     end
+
+    def inspect
+      MijDiscord.make_inspect(self,
+        :id, :content, :author, :channel, :timestamp, :edited, :pinned, :edited_timestamp,
+        :user_mentions, :role_mentions, :attachments, :embeds, :tts, :webhook_id)
+    end
   end
 
   class Attachment
@@ -208,6 +214,10 @@ module MijDiscord::Data
 
     def image?
       !@width.nil? && !@height.nil?
+    end
+
+    def inspect
+      MijDiscord.make_inspect(self, :url, :filename, :size, :width, :height)
     end
   end
 end

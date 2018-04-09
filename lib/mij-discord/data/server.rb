@@ -46,7 +46,7 @@ module MijDiscord::Data
     alias_method :embed_enabled?, :embed_enabled
     alias_method :has_embed?, :embed_enabled
 
-    # attr_reader :member_count
+    attr_reader :member_count
 
     attr_reader :verification_level
 
@@ -424,10 +424,20 @@ module MijDiscord::Data
       response = MijDiscord::Core::API::Server.search_messages(@bot.auth, @id, options)
       SearchResults.new(JSON.parse(response), @bot)
     end
+
+    def inspect
+      MijDiscord.make_inspect(self,
+      :id, :name, :owner, :member_count, :features, :embed_enabled, :verification_level,
+      :content_filter_level, :default_notifications, :afk_timeout, :afk_channel)
+    end
   end
 
   class SearchResults
-    ResultData = Struct.new(:result, :context)
+    ResultData = Struct.new(:result, :context) do
+      def inspect
+        MijDiscord.make_inspect(self, :result, :context)
+      end
+    end
 
     attr_reader :total_count
 
@@ -441,6 +451,10 @@ module MijDiscord::Data
         result = context.delete_at(context.length / 2)
         ResultData.new(result, context)
       end
+    end
+
+    def inspect
+      MijDiscord.make_inspect(self, :total_count, :messages)
     end
   end
 end

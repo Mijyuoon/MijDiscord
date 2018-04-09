@@ -53,6 +53,10 @@ module MijDiscord::Events
       result.reduce(true, &:&)
     end
 
+    def inspe
+      MijDiscord.make_inspect(self)
+    end
+
     private
 
     def trigger_match?(match, key)

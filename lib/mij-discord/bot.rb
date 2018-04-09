@@ -30,6 +30,10 @@ module MijDiscord
       end
 
       alias_method :to_s, :token
+
+      def inspect
+        MijDiscord.make_inspect(self, :id, :type, :name)
+      end
     end
 
     EVENTS = {
@@ -577,6 +581,10 @@ module MijDiscord
     rescue => exc
       MijDiscord::LOGGER.error('Dispatch') { 'An error occurred in dispatch handler' }
       MijDiscord::LOGGER.error('Dispatch') { exc }
+    end
+
+    def inspect
+      MijDiscord.make_inspect(self, :auth)
     end
 
     private

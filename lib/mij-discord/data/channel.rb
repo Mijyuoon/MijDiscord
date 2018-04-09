@@ -204,6 +204,10 @@ module MijDiscord::Data
       MijDiscord::Core::API::Channel.delete(@bot.auth, @id, reason)
       @server.cache.remove_channel(@id)
     end
+
+    def inspect
+      MijDiscord.make_inspect(self, :id, :name, :type, :position)
+    end
   end
 
   class TextChannel < Channel
@@ -412,6 +416,10 @@ module MijDiscord::Data
       MijDiscord::Core::API::Channel.leave_group(@bot.auth, @id)
       nil
     end
+
+    def inspect
+      MijDiscord.make_inspect(self, :id, :name, :type, :position, :topic, :nsfw)
+    end
   end
 
   class VoiceChannel < Channel
@@ -446,6 +454,10 @@ module MijDiscord::Data
     alias_method :user_limit=, :set_user_limit
     alias_method :set_limit, :set_user_limit
     alias_method :limit=, :set_user_limit
+
+    def inspect
+      MijDiscord.make_inspect(self, :id, :name, :type, :position, :bitrate, :user_limit)
+    end
   end
 
   class ChannelCategory < Channel
