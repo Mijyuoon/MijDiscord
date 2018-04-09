@@ -41,6 +41,10 @@ module MijDiscord::Data
       FLAGS.map {|bit, name| list.include?(name) ? bit : 0 }.reduce(&:|)
     end
 
+    def self.flags(bits)
+      Set.new(FLAGS.map {|bit, name| (bits & bit).zero? ? nil : name }.reject(&:nil?))
+    end
+
     FLAGS.each do |bit, name|
       attr_reader name
       alias_method :"#{name}?", name
@@ -72,7 +76,9 @@ module MijDiscord::Data
 
     alias_method :bits=, :set_bits
 
-
+    def flags
+      Permissions.flags(@bits)
+    end
   end
 
   class Overwrite
