@@ -53,7 +53,7 @@ module MijDiscord::Events
       result.reduce(true, &:&)
     end
 
-    def inspe
+    def inspect
       MijDiscord.make_inspect(self)
     end
 
