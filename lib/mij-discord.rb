@@ -13,6 +13,7 @@ require 'websocket-client-simple'
 require 'rest-client'
 
 require_relative 'mij-discord/version'
+require_relative 'mij-discord/extensions'
 require_relative 'mij-discord/logger'
 require_relative 'mij-discord/cache'
 require_relative 'mij-discord/events'
@@ -48,11 +49,3 @@ require_relative 'mij-discord/events/channel'
 require_relative 'mij-discord/events/message'
 
 require_relative 'mij-discord/bot'
-
-class Integer
-  alias_method :to_id, :itself
-end
-
-class String
-  alias_method :to_id, :to_i
-end

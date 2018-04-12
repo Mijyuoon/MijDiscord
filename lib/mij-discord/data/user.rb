@@ -87,26 +87,26 @@ module MijDiscord::Data
       data = {name: data} if data.is_a?(String)
 
       times = {
-        start: data[:start_time]&.to_i,
-        end: data[:end_time]&.to_i,
+        start: data.try_keys(:start_time, 'start_time')&.to_i,
+        end: data.try_keys(:end_time, 'end_time')&.to_i,
       }.delete_if {|_,v| v.nil? }
 
       assets = {
-        large_image: data[:large_image],
-        large_text: data[:large_text],
-        small_image: data[:small_image],
-        small_text: data[:small_text],
+        large_image: data.try_keys(:large_image, 'large_image'),
+        large_text: data.try_keys(:large_text, 'large_text'),
+        small_image: data.try_keys(:small_image, 'small_image'),
+        small_text: data.try_keys(:small_text, 'small_text'),
       }.delete_if {|_,v| v.nil? }
 
-      type = PLAYING_TYPE.index(data[:type])
+      type = PLAYING_TYPE.index(data.try_keys(:type, 'type'))
 
       game = {
         type: type || 0,
-        name: data[:name],
-        url: data[:url],
-        details: data[:details],
-        state: data[:state],
-        application_id: data[:application],
+        name: data.try_keys(:name, 'name'),
+        url: data.try_keys(:url, 'url'),
+        details: data.try_keys(:details, 'details'),
+        state: data.try_keys(:state, 'state'),
+        application_id: data.try_keys(:application, 'application'),
 
         timestamps: times.empty? ? nil : times,
         assets: assets.empty? ? nil : assets,
