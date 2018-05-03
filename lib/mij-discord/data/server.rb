@@ -216,12 +216,20 @@ module MijDiscord::Data
       @voice_states[id&.to_id]
     end
 
-    def default_channel
+    def default_channel(can_send = false)
       text_channels.sort_by {|ch| [ch.position, ch.id] }.find do |ch|
         if (overwrite = ch.permission_overwrites[id])
-          overwrite.allow.read_messages? || !overwrite.deny.read_messages?
+          if can_send
+            overwrite.allow.send_messages? || !overwrite.deny.send_messages?
+          else
+            overwrite.allow.read_messages? || !overwrite.deny.read_messages?
+          end
         else
-          everyone_role.permissions.read_messages
+          if can_send
+            everyone_role.permissions.send_messages
+          else
+            everyone_role.permissions.read_messages
+          end
         end
       end
     end
