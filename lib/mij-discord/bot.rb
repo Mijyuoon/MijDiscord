@@ -270,7 +270,7 @@ module MijDiscord
           end
 
           em_data = { 'id' => $3.to_i, 'name' => $2, 'animated' => !$1.empty? }
-          MijDiscord::Data::Emoji.new(em_data, self, nil)
+          MijDiscord::Data::Emoji.new(em_data, nil)
       end
     end
 
@@ -380,6 +380,9 @@ module MijDiscord
           end
 
           notify_ready if @unavailable_servers.zero?
+
+        when :SESSIONS_REPLACE
+          # Do nothing with session replace because no idea what it does.
 
         when :GUILD_MEMBERS_CHUNK
           server = @cache.get_server(data['guild_id'])
@@ -527,6 +530,10 @@ module MijDiscord
           messages.each {|x| trigger_event(:delete_message, self, x) }
 
         when :MESSAGE_REACTION_ADD
+          channel = @cache.get_channel(data['channel_id'], nil)
+          message = channel.cache.get_message(data['message_id'], local: true)
+          message.update_reaction(add: data) if message
+
           # Should add full use ignore support?
           return if ignored_user?(data['user_id'])
 
@@ -534,6 +541,10 @@ module MijDiscord
           trigger_event(:toggle_reaction, self, data)
 
         when :MESSAGE_REACTION_REMOVE
+          channel = @cache.get_channel(data['channel_id'], nil)
+          message = channel.cache.get_message(data['message_id'], local: true)
+          message.update_reaction(remove: data) if message
+
           # Should add full use ignore support?
           return if ignored_user?(data['user_id'])
 
@@ -541,6 +552,10 @@ module MijDiscord
           trigger_event(:toggle_reaction, self, data)
 
         when :MESSAGE_REACTION_REMOVE_ALL
+          channel = @cache.get_channel(data['channel_id'], nil)
+          message = channel.cache.get_message(data['message_id'], local: true)
+          message.update_reaction(clear: true) if message
+
           trigger_event(:clear_reactions, self, data)
 
         when :TYPING_START

@@ -30,7 +30,7 @@ module MijDiscord::Data
 
     attr_reader :embeds
 
-    # attr_reader :reactions
+    attr_reader :reactions
 
     attr_reader :tts
     alias_method :tts?, :tts
@@ -81,10 +81,10 @@ module MijDiscord::Data
 
       @mention_everyone = !!data['mention_everyone']
 
-      # @reactions = []
-      # if (reactions = data['reactions'])
-      #   reactions.each {|x| @reactions << Reaction.new(x) }
-      # end
+      @reactions = []
+      if (reactions = data['reactions'])
+        reactions.each {|x| @reactions << Reaction.new(x, self) }
+      end
 
       @user_mentions = []
       if (mentions = data['mentions'])
@@ -104,6 +104,38 @@ module MijDiscord::Data
       @embeds = []
       if (embeds = data['embeds'])
         embeds.each {|x| @embeds << Embed.new(x) }
+      end
+    end
+
+    def update_reaction(add: nil, remove: nil, clear: false)
+      @reactions.clear if clear
+
+      unless add.nil?
+        id = add['emoji']['id'].to_i
+        name = add['emoji']['name']
+        userid = add['user_id'].to_i
+
+        if (emoji = @reactions.find {|x| id.zero? ? (x.name == name) : (x.id == id) })
+          emoji.update_data(count: emoji.count + 1, me: @bot.profile == userid ? true : nil)
+        else
+          emoji = Reaction.new(add, self)
+          emoji.update_data(me: @bot.profile == userid)
+          @reactions << emoji
+        end
+      end
+
+      unless remove.nil?
+        id = remove['emoji']['id'].to_i
+        name = remove['emoji']['name']
+        userid = remove['user_id'].to_i
+
+        if (emoji = @reactions.find {|x| id.zero? ? (x.name == name) : (x.id == id) })
+          emoji.update_data(count: emoji.count - 1, me: @bot.profile == userid ? false : nil)
+          @reactions.delete(emoji) if emoji.count < 1
+        else
+          # WTF? How did this happen?
+          MijDiscord::LOGGER.warn('Events') { 'MESSAGE_REACTION_REMOVE triggered on message with no reactions!' }
+        end
       end
     end
 
@@ -144,9 +176,9 @@ module MijDiscord::Data
       !@webhook_id.nil?
     end
 
-    # def my_reactions
-    #   @reactions.select(&:me)
-    # end
+    def my_reactions
+      @reactions.select(&:me)
+    end
 
     def create_reaction(reaction)
       emoji = reaction.respond_to?(:reaction) ? reaction.reaction : reaction

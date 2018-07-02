@@ -109,7 +109,7 @@ module MijDiscord::Data
     def update_emojis(data)
       @emojis = {}
       data['emojis'].each do |em|
-        emoji = MijDiscord::Data::Emoji.new(em, @bot, self)
+        emoji = MijDiscord::Data::Emoji.new(em, self)
         @emojis[emoji.id] = emoji
       end
     end

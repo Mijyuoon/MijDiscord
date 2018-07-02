@@ -12,8 +12,8 @@ module MijDiscord::Data
 
     attr_reader :animated
 
-    def initialize(data, bot, server)
-      @bot, @server = bot, server
+    def initialize(data, server)
+      @server = server
 
       @id = data['id'].to_i
       @name = data['name']
@@ -46,22 +46,26 @@ module MijDiscord::Data
     end
   end
 
-  class Reaction
-    attr_reader :id
-
-    attr_reader :name
+  class Reaction < Emoji
+    attr_reader :message
 
     attr_reader :count
 
     attr_reader :me
     alias_method :me?, :me
 
-    def initialize(data)
+    def initialize(data, message)
+      super(data['emoji'], nil)
+
+      @message = message
+
       @me = !!data['me']
       @count = data['count'] || 1
+    end
 
-      @id = data['emoji']['id']&.to_i
-      @name = data['emoji']['name']
+    def update_data(count: nil, me: nil)
+      @count = count unless count.nil?
+      @me = me unless me.nil?
     end
 
     def inspect

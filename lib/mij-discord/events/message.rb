@@ -131,7 +131,7 @@ module MijDiscord::Events
 
       if (emoji = data['emoji'])
         @emoji = server&.emoji(emoji['id'])
-        @emoji ||= MijDiscord::Data::Emoji.new(emoji, @bot, nil)
+        @emoji ||= MijDiscord::Data::Emoji.new(emoji, nil)
       end
     end
 
