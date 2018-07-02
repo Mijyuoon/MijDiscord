@@ -32,6 +32,8 @@ module MijDiscord::Events
 
   class UpdateWebhooks < Channel; end
 
+  class UpdatePins < Channel; end
+
   class Recipient < Channel
     attr_reader :recipient
     alias_method :user, :recipient

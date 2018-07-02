@@ -62,6 +62,7 @@ module MijDiscord
       update_channel: MijDiscord::Events::UpdateChannel,
       delete_channel: MijDiscord::Events::DeleteChannel,
       update_webhooks: MijDiscord::Events::UpdateWebhooks,
+      update_pins: MijDiscord::Events::UpdatePins,
       add_recipient: MijDiscord::Events::AddRecipient,
       remove_recipient: MijDiscord::Events::RemoveRecipient,
 
@@ -434,6 +435,10 @@ module MijDiscord
         when :WEBHOOKS_UPDATE
           channel = @cache.get_channel(data['channel_id'], nil)
           trigger_event(:update_webhooks, self, channel)
+
+        when :CHANNEL_PINS_UPDATE
+          channel = @cache.get_channel(data['channel_id'], nil)
+          trigger_event(:update_pins, self, channel)
 
         when :CHANNEL_RECIPIENT_ADD
           channel = @cache.get_channel(data['channel_id'], nil)
