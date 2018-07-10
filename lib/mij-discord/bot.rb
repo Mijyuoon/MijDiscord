@@ -42,6 +42,7 @@ module MijDiscord
       connect: MijDiscord::Events::Connect,
       disconnect: MijDiscord::Events::Disconnect,
       exception: MijDiscord::Events::Exception,
+      unhandled: MijDiscord::Events::Unhandled,
 
       update_user: MijDiscord::Events::UpdateUser,
       create_server: MijDiscord::Events::CreateServer,
@@ -306,7 +307,16 @@ module MijDiscord
     end
 
     def ignored_user?(user)
-      @ignore_self && user.to_id == @auth.id || @ignored_ids.include?(user.to_id)
+      user = user.to_id
+
+      return true if @ignore_self && user == @auth.id
+      return true if @ignored_ids.include?(user)
+
+      if @ignore_bots && (user = @cache.get_user(user, local: true))
+        return true if user.bot_account?
+      end
+
+      false
     end
 
     def update_presence(status: nil, game: nil)
@@ -385,6 +395,9 @@ module MijDiscord
         when :SESSIONS_REPLACE
           # Do nothing with session replace because no idea what it does.
 
+        when :PRESENCES_REPLACE
+          # Do nothing with presences replace because no idea what it does.
+
         when :GUILD_MEMBERS_CHUNK
           server = @cache.get_server(data['guild_id'])
           server.update_members_chunk(data['members'])
@@ -440,6 +453,9 @@ module MijDiscord
           channel = @cache.get_channel(data['channel_id'], nil)
           trigger_event(:update_pins, self, channel)
 
+        when :CHANNEL_PINS_ACK
+          # Do nothing with pins acknowledgement
+
         when :CHANNEL_RECIPIENT_ADD
           channel = @cache.get_channel(data['channel_id'], nil)
           recipient = channel.update_recipient(add: data['user'])
@@ -488,20 +504,21 @@ module MijDiscord
 
         when :GUILD_BAN_ADD
           server = @cache.get_server(data['guild_id'])
-          user = @cache.get_user(data['user']['id'])
+          user = @cache.get_user(data['user']['id'], local: @auth.user?)
+          user ||= User.new(data['user'], self)
           trigger_event(:ban_user, self, server, user)
 
         when :GUILD_BAN_REMOVE
           server = @cache.get_server(data['guild_id'])
-          user = @cache.get_user(data['user']['id'])
+          user = @cache.get_user(data['user']['id'], local: @auth.user?)
+          user ||= User.new(data['user'], self)
           trigger_event(:unban_user, self, server, user)
 
         when :MESSAGE_CREATE
-          return if ignored_user?(data['author']['id'])
-          return if @ignore_bots && data['author']['bot']
-
           channel = @cache.get_channel(data['channel_id'], nil)
           message = channel.cache.put_message(data)
+
+          return if ignored_user?(data['author']['id'])
           trigger_event(:create_message, self, message)
 
           if message.channel.private?
@@ -517,11 +534,10 @@ module MijDiscord
           author = data['author']
           return if author.nil?
 
-          return if ignored_user?(author['id'])
-          return if @ignore_bots && author['bot']
-
           channel = @cache.get_channel(data['channel_id'], nil)
           message = channel.cache.put_message(data, update: true)
+
+          return if ignored_user?(author['id'])
           trigger_event(:edit_message, self, message)
 
         when :MESSAGE_DELETE
@@ -539,9 +555,7 @@ module MijDiscord
           message = channel.cache.get_message(data['message_id'], local: true)
           message.update_reaction(add: data) if message
 
-          # Should add full use ignore support?
           return if ignored_user?(data['user_id'])
-
           trigger_event(:add_reaction, self, data)
           trigger_event(:toggle_reaction, self, data)
 
@@ -550,9 +564,7 @@ module MijDiscord
           message = channel.cache.get_message(data['message_id'], local: true)
           message.update_reaction(remove: data) if message
 
-          # Should add full use ignore support?
           return if ignored_user?(data['user_id'])
-
           trigger_event(:remove_reaction, self, data)
           trigger_event(:toggle_reaction, self, data)
 
@@ -565,6 +577,7 @@ module MijDiscord
 
         when :TYPING_START
           begin
+            return if ignored_user?(data['user_id'])
             trigger_event(:start_typing, self, data)
           rescue MijDiscord::Errors::Forbidden
             # Ignoring the channel we can't access
@@ -573,6 +586,8 @@ module MijDiscord
 
         when :USER_UPDATE
           user = @cache.put_user(data, update: true)
+          @profile.update_data(data) if user.id == @auth.id
+
           trigger_event(:update_user, self, user)
 
         when :PRESENCE_UPDATE
@@ -597,6 +612,7 @@ module MijDiscord
 
         else
           MijDiscord::LOGGER.warn('Dispatch') { "Unhandled gateway event type: #{type}" }
+          trigger_event(:unhandled, self, type, data)
       end
     rescue => exc
       MijDiscord::LOGGER.error('Dispatch') { 'An error occurred in dispatch handler' }

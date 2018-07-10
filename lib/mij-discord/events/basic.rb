@@ -33,6 +33,20 @@ module MijDiscord::Events
     end
   end
 
+  class Unhandled < Generic
+    attr_reader :name
+
+    attr_reader :data
+
+    filter_match(:name, on: Symbol, cmp: :eql?)
+
+    def initialize(bot, name, data)
+      super(bot)
+
+      @name, @data = name, data
+    end
+  end
+
   class UpdateUser < Generic
     attr_reader :user
 
