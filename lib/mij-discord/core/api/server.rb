@@ -461,18 +461,5 @@ module MijDiscord::Core::API::Server
         Authorization: auth
       )
     end
-
-    # Search messages (for userbots only)
-    # Not officially documented, reverse engineered from tracking Discord's network activity
-    def search_messages(auth, server_id, options)
-      options = URI.encode_www_form(options)
-      MijDiscord::Core::API.request(
-        :guilds_guild_messages_search,
-        server_id,
-        :get,
-        "#{MijDiscord::Core::API::APIBASE_URL}/guilds/#{server_id}/messages/search?#{options}",
-        Authorization: auth
-      )
-    end
   end
 end

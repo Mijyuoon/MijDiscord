@@ -16,7 +16,6 @@ module MijDiscord
 
         @token = case type
           when :bot then "Bot #{token}"
-          when :user then "#{token}"
           else raise ArgumentError, 'Invalid token type'
         end
       end
@@ -504,14 +503,12 @@ module MijDiscord
 
         when :GUILD_BAN_ADD
           server = @cache.get_server(data['guild_id'])
-          user = @cache.get_user(data['user']['id'], local: @auth.user?)
-          user ||= User.new(data['user'], self)
+          user = @cache.get_user(data['user']['id'])
           trigger_event(:ban_user, self, server, user)
 
         when :GUILD_BAN_REMOVE
           server = @cache.get_server(data['guild_id'])
-          user = @cache.get_user(data['user']['id'], local: @auth.user?)
-          user ||= User.new(data['user'], self)
+          user = @cache.get_user(data['user']['id'])
           trigger_event(:unban_user, self, server, user)
 
         when :MESSAGE_CREATE
@@ -633,11 +630,6 @@ module MijDiscord
       @gateway.notify_ready
 
       trigger_event(:ready, self)
-
-      if @auth.user?
-        guilds = @cache.list_servers.map(&:id)
-        @gateway.send_request_guild_sync(guilds)
-      end
     end
 
     def trigger_event(name, *args)

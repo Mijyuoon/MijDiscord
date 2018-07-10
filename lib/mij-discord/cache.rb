@@ -81,10 +81,7 @@ module MijDiscord::Cache
       return nil if local
 
       begin
-        response = case @bot.auth.type
-          when :bot then MijDiscord::Core::API::User.resolve(@bot.auth, id)
-          when :user then MijDiscord::Core::API::User.resolve2(@bot.auth, id)
-        end
+        response = MijDiscord::Core::API::User.resolve(@bot.auth, id)
       rescue MijDiscord::Errors::NotFound
         return nil
       end
@@ -278,10 +275,7 @@ module MijDiscord::Cache
       return nil if local
 
       begin
-        response = case @bot.auth.type
-          when :bot then MijDiscord::Core::API::Channel.message(@bot.auth, @channel.id, key)
-          when :user then MijDiscord::Core::API::Channel.messages(@bot.auth, @channel.id, 1, nil, nil, key)
-        end
+        response = MijDiscord::Core::API::Channel.message(@bot.auth, @channel.id, key)
       rescue MijDiscord::Errors::NotFound
         return nil
       end
