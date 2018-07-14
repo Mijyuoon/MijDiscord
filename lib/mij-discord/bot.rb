@@ -505,13 +505,13 @@ module MijDiscord
         when :GUILD_BAN_ADD
           server = @cache.get_server(data['guild_id'])
           user = @cache.get_user(data['user']['id'], local: @auth.user?)
-          user ||= User.new(data['user'], self)
+          user ||= MijDiscord::Data::User.new(data['user'], self)
           trigger_event(:ban_user, self, server, user)
 
         when :GUILD_BAN_REMOVE
           server = @cache.get_server(data['guild_id'])
           user = @cache.get_user(data['user']['id'], local: @auth.user?)
-          user ||= User.new(data['user'], self)
+          user ||= MijDiscord::Data::User.new(data['user'], self)
           trigger_event(:unban_user, self, server, user)
 
         when :MESSAGE_CREATE
