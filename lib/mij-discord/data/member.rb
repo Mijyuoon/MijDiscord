@@ -136,8 +136,7 @@ module MijDiscord::Data
     end
 
     def inspect
-      MijDiscord.make_inspect(self,
-        :id, :username, :discriminator, :avatar_id, :bot_account, :joined_at, :nickname, :roles)
+      MijDiscord.make_inspect(self, :user, :joined_at, :nickname, :roles)
     end
 
     private
@@ -169,8 +168,7 @@ module MijDiscord::Data
     end
 
     def inspect
-      MijDiscord.make_inspect(self,
-        :id, :username, :discriminator, :avatar_id, :bot_account, :joined_at)
+      MijDiscord.make_inspect(self, :user, :joined_at)
     end
   end
 end

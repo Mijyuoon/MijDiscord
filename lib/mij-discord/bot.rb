@@ -598,6 +598,7 @@ module MijDiscord
 
           old_game = member.game
           member.update_presence(data)
+          @profile.update_presence(data) if member.id == @auth.id
 
           if old_game != member.game
             trigger_event(:update_playing, self, data)
