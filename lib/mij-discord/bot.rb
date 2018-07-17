@@ -254,6 +254,8 @@ module MijDiscord
       case mention
         when /^<@!?(\d+)>$/
           server_id ? member(server_id, $1) : user($1)
+        when /^<#(\d+)>$/
+          channel($1, server_id)
         when /^<@&(\d+)>$/
           role = role(server_id, $1)
           return role if role
