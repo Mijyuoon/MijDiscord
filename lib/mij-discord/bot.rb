@@ -288,7 +288,7 @@ module MijDiscord
       if !type.nil? && mention =~ /^(\d+)$/
         parse_mention_id($1, type, server_id)
 
-      elsif mention =~ /^<@?!(\d+)>$/
+      elsif mention =~ /^<@!?(\d+)>$/
         return nil if type && type != :user
         parse_mention_id($1, :user, server_id)
 
