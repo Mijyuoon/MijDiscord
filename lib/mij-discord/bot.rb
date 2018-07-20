@@ -251,10 +251,10 @@ module MijDiscord
     def parse_mention_id(mention, type, server_id = nil)
       case type
         when :user
-          server_id ? member(server_id, mention) : user(mention)
+          return server_id ? member(server_id, mention) : user(mention)
 
         when :channel
-          channel(mention, server_id)
+          return channel(mention, server_id)
 
         when :role
           role = role(server_id, mention)
@@ -287,21 +287,26 @@ module MijDiscord
 
       if !type.nil? && mention =~ /^(\d+)$/
         parse_mention_id($1, type, server_id)
+
       elsif mention =~ /^<@?!(\d+)>$/
         return nil if type && type != :user
         parse_mention_id($1, :user, server_id)
+
       elsif mention =~ /^<#(\d+)>$/
         return nil if type && type != :channel
         parse_mention_id($1, :channel, server_id)
+
       elsif mention =~ /^<@&(\d+)>$/
         return nil if type && type != :role
         parse_mention_id($1, :role, server_id)
+
       elsif mention =~ /^<(a?):(\w+):(\d+)>$/
         return nil if type && type != :emoji
         parse_mention_id($1, :emoji, server_id) || begin
           em_data = { 'id' => $3.to_i, 'name' => $2, 'animated' => !$1.empty? }
           MijDiscord::Data::Emoji.new(em_data, nil)
         end
+
       end
     end
 
