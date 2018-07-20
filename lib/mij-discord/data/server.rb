@@ -386,7 +386,7 @@ module MijDiscord::Data
 
     alias_method :afk_timeout=, :set_afk_timeout
 
-    def icon_url(format = :webp)
+    def icon_url(format = :png)
       return nil unless @icon_id
       MijDiscord::Core::API.icon_url(@id, @icon_id, format)
     end

@@ -19,12 +19,12 @@ module MijDiscord::Core::API
     end
 
     # Make an icon URL from server and icon IDs
-    def icon_url(server_id, icon_id, format = :webp)
+    def icon_url(server_id, icon_id, format = :png)
       "#{CDN_URL}/icons/#{server_id}/#{icon_id}.#{format}"
     end
 
     # Make an icon URL from application and icon IDs
-    def app_icon_url(app_id, icon_id, format = :webp)
+    def app_icon_url(app_id, icon_id, format = :png)
       "#{CDN_URL}/app-icons/#{app_id}/#{icon_id}.#{format}"
     end
 
@@ -39,7 +39,7 @@ module MijDiscord::Core::API
     end
 
     # Make an emoji icon URL from emoji ID
-    def emoji_icon_url(emoji_id, format = :webp)
+    def emoji_icon_url(emoji_id, format = :png)
       "#{CDN_URL}/emojis/#{emoji_id}.#{format}"
     end
 

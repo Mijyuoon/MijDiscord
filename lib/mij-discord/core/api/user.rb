@@ -148,7 +148,7 @@ module MijDiscord::Core::API::User
 
     # Make an avatar URL from the user and avatar IDs
     def avatar_url(user_id, avatar_id, format = nil)
-      format ||= avatar_id.start_with?('a_') ? :gif : :webp
+      format ||= avatar_id.start_with?('a_') ? :gif : :png
       "#{MijDiscord::Core::API::CDN_URL}/avatars/#{user_id}/#{avatar_id}.#{format}"
     end
   end
