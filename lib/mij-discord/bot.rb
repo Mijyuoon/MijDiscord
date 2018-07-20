@@ -248,33 +248,60 @@ module MijDiscord
       end
     end
 
-    def parse_mention(mention, server_id = nil)
-      gateway_check
+    def parse_mention_id(mention, type, server_id = nil)
+      case type
+        when :user
+          server_id ? member(server_id, mention) : user(mention)
 
-      case mention
-        when /^<@!?(\d+)>$/
-          server_id ? member(server_id, $1) : user($1)
-        when /^<#(\d+)>$/
-          channel($1, server_id)
-        when /^<@&(\d+)>$/
-          role = role(server_id, $1)
+        when :channel
+          channel(mention, server_id)
+
+        when :role
+          role = role(server_id, mention)
           return role if role
 
           servers.each do |sv|
-            role = sv.role($1)
+            role = sv.role(mention)
             return role if role
           end
-        when /^<(a?):(\w+):(\d+)>$/
-          emoji = emoji(server_id, $3)
+
+        when :emoji
+          emoji = emoji(server_id, mention)
           return emoji if emoji
 
           servers.each do |sv|
-            emoji = sv.emoji($3)
+            emoji = sv.emoji(mention)
             return emoji if emoji
           end
 
+        else raise TypeError, "Invalid mention type '#{type}'"
+      end
+
+      nil
+    end
+
+    def parse_mention(mention, server_id = nil, type: nil)
+      gateway_check
+
+      mention = mention.to_s.strip
+
+      if !type.nil? && mention =~ /^(\d+)$/
+        parse_mention_id($1, type, server_id)
+      elsif mention =~ /^<@?!(\d+)>$/
+        return nil if type && type != :user
+        parse_mention_id($1, :user, server_id)
+      elsif mention =~ /^<#(\d+)>$/
+        return nil if type && type != :channel
+        parse_mention_id($1, :channel, server_id)
+      elsif mention =~ /^<@&(\d+)>$/
+        return nil if type && type != :role
+        parse_mention_id($1, :role, server_id)
+      elsif mention =~ /^<(a?):(\w+):(\d+)>$/
+        return nil if type && type != :emoji
+        parse_mention_id($1, :emoji, server_id) || begin
           em_data = { 'id' => $3.to_i, 'name' => $2, 'animated' => !$1.empty? }
           MijDiscord::Data::Emoji.new(em_data, nil)
+        end
       end
     end
 
