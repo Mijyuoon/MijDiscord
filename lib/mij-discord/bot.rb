@@ -16,6 +16,7 @@ module MijDiscord
 
         @token = case type
           when :bot then "Bot #{token}"
+          when :user then "#{token}"
           else raise ArgumentError, 'Invalid token type'
         end
       end
@@ -78,7 +79,6 @@ module MijDiscord
       start_typing: MijDiscord::Events::StartTyping,
 
       update_presence: MijDiscord::Events::UpdatePresence,
-      update_playing: MijDiscord::Events::UpdatePlaying,
       update_voice_state: MijDiscord::Events::UpdateVoiceState,
     }.freeze
 
@@ -247,31 +247,65 @@ module MijDiscord
       end
     end
 
-    def parse_mention(mention, server_id = nil)
-      gateway_check
+    def parse_mention_id(mention, type, server_id = nil)
+      case type
+        when :user
+          return server_id ? member(server_id, mention) : user(mention)
 
-      case mention
-        when /^<@!?(\d+)>$/
-          server_id ? member(server_id, $1) : user($1)
-        when /^<@&(\d+)>$/
-          role = role(server_id, $1)
+        when :channel
+          return channel(mention, server_id)
+
+        when :role
+          role = role(server_id, mention)
           return role if role
 
           servers.each do |sv|
-            role = sv.role($1)
+            role = sv.role(mention)
             return role if role
           end
-        when /^<(a?):(\w+):(\d+)>$/
-          emoji = emoji(server_id, $3)
+
+        when :emoji
+          emoji = emoji(server_id, mention)
           return emoji if emoji
 
           servers.each do |sv|
-            emoji = sv.emoji($3)
+            emoji = sv.emoji(mention)
             return emoji if emoji
           end
 
+        else raise TypeError, "Invalid mention type '#{type}'"
+      end
+
+      nil
+    end
+
+    def parse_mention(mention, server_id = nil, type: nil)
+      gateway_check
+
+      mention = mention.to_s.strip
+
+      if !type.nil? && mention =~ /^(\d+)$/
+        parse_mention_id($1, type, server_id)
+
+      elsif mention =~ /^<@!?(\d+)>$/
+        return nil if type && type != :user
+        parse_mention_id($1, :user, server_id)
+
+      elsif mention =~ /^<#(\d+)>$/
+        return nil if type && type != :channel
+        parse_mention_id($1, :channel, server_id)
+
+      elsif mention =~ /^<@&(\d+)>$/
+        return nil if type && type != :role
+        parse_mention_id($1, :role, server_id)
+
+      elsif mention =~ /^<(a?):(\w+):(\d+)>$/
+        return nil if type && type != :emoji
+        parse_mention_id($1, :emoji, server_id) || begin
           em_data = { 'id' => $3.to_i, 'name' => $2, 'animated' => !$1.empty? }
           MijDiscord::Data::Emoji.new(em_data, nil)
+        end
+
       end
     end
 
@@ -503,12 +537,14 @@ module MijDiscord
 
         when :GUILD_BAN_ADD
           server = @cache.get_server(data['guild_id'])
-          user = @cache.get_user(data['user']['id'])
+          user = @cache.get_user(data['user']['id'], local: @auth.user?)
+          user ||= MijDiscord::Data::User.new(data['user'], self)
           trigger_event(:ban_user, self, server, user)
 
         when :GUILD_BAN_REMOVE
           server = @cache.get_server(data['guild_id'])
-          user = @cache.get_user(data['user']['id'])
+          user = @cache.get_user(data['user']['id'], local: @auth.user?)
+          user ||= MijDiscord::Data::User.new(data['user'], self)
           trigger_event(:unban_user, self, server, user)
 
         when :MESSAGE_CREATE
@@ -583,24 +619,22 @@ module MijDiscord
 
         when :USER_UPDATE
           user = @cache.put_user(data, update: true)
-          @profile.update_data(data) if user.id == @auth.id
+          @profile.update_data(data) if @profile == user
 
           trigger_event(:update_user, self, user)
 
         when :PRESENCE_UPDATE
-          return unless data['guild_id']
-
-          server = @cache.get_server(data['guild_id'])
-          member = server.cache.put_member(data, update: true)
-
-          old_game = member.game
-          member.update_presence(data)
-
-          if old_game != member.game
-            trigger_event(:update_playing, self, data)
+          if data['guild_id']
+            server = @cache.get_server(data['guild_id'])
+            user = server.cache.get_member(data['user']['id'])
+            user.update_presence(data)
           else
-            trigger_event(:update_presence, self, data)
+            user = @cache.get_user(data['user']['id'])
+            user.update_presence(data)
+            @profile.update_presence(data) if @profile == user
           end
+
+          trigger_event(:update_presence, self, data)
 
         when :VOICE_STATE_UPDATE
           server = @cache.get_server(data['guild_id'])
@@ -630,6 +664,11 @@ module MijDiscord
       @gateway.notify_ready
 
       trigger_event(:ready, self)
+
+      if @auth.user?
+        guilds = @cache.list_servers.map(&:id)
+        @gateway.send_request_guild_sync(guilds)
+      end
     end
 
     def trigger_event(name, *args)

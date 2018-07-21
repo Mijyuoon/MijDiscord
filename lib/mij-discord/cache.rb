@@ -26,7 +26,7 @@ module MijDiscord::Cache
     end
 
     def get_server(key, local: false)
-      id = key&.to_id
+      id = key&.to_id || return
       return @servers[id] if @servers.has_key?(id)
       return nil if local
 
@@ -40,7 +40,7 @@ module MijDiscord::Cache
     end
 
     def get_channel(key, server, local: false)
-      id = key&.to_id
+      id = key&.to_id || return
       return @channels[id] if @channels.has_key?(id)
       raise MijDiscord::Errors::Forbidden if @restricted_channels[id]
       return nil if local
@@ -65,7 +65,7 @@ module MijDiscord::Cache
     end
 
     def get_pm_channel(key, local: false)
-      id = key&.to_id
+      id = key&.to_id || return
       return @pm_channels[id] if @pm_channels.has_key?(id)
       return nil if local
 
@@ -76,7 +76,7 @@ module MijDiscord::Cache
     end
 
     def get_user(key, local: false)
-      id = key&.to_id
+      id = key&.to_id || return
       return @users[id] if @users.has_key?(id)
       return nil if local
 
@@ -174,7 +174,7 @@ module MijDiscord::Cache
     end
 
     def get_member(key, local: false)
-      id = key&.to_id
+      id = key&.to_id || return
       return @members[id] if @members.has_key?(id)
       return nil if local
 
@@ -188,7 +188,7 @@ module MijDiscord::Cache
     end
 
     def get_role(key, local: false)
-      id = key&.to_id
+      id = key&.to_id || return
       return @roles[id] if @roles.has_key?(id)
       return nil if local
 
@@ -197,7 +197,7 @@ module MijDiscord::Cache
     end
 
     def get_channel(key, local: false)
-      id = key&.to_id
+      id = key&.to_id || return
       return @channels[id] if @channels.has_key?(id)
 
       channel = @bot.cache.get_channel(key, local: local)
@@ -270,7 +270,7 @@ module MijDiscord::Cache
     end
 
     def get_message(key, local: false)
-      id = key&.to_id
+      id = key&.to_id || return
       return @messages[id] if @messages.has_key?(id)
       return nil if local
 

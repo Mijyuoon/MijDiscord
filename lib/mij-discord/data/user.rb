@@ -87,29 +87,27 @@ module MijDiscord::Data
       data = {name: data} if data.is_a?(String)
 
       times = {
-        start: data.try_keys(:start_time, 'start_time')&.to_i,
-        end: data.try_keys(:end_time, 'end_time')&.to_i,
+        'start' => data.try_keys(:start_time, 'start_time')&.to_i,
+        'end' => data.try_keys(:end_time, 'end_time')&.to_i,
       }.delete_if {|_,v| v.nil? }
 
       assets = {
-        large_image: data.try_keys(:large_image, 'large_image'),
-        large_text: data.try_keys(:large_text, 'large_text'),
-        small_image: data.try_keys(:small_image, 'small_image'),
-        small_text: data.try_keys(:small_text, 'small_text'),
+        'large_image' => data.try_keys(:large_image, 'large_image')&.to_s,
+        'large_text' => data.try_keys(:large_text, 'large_text')&.to_s,
+        'small_image' => data.try_keys(:small_image, 'small_image')&.to_s,
+        'small_text' => data.try_keys(:small_text, 'small_text')&.to_s,
       }.delete_if {|_,v| v.nil? }
 
-      type = PLAYING_TYPE.index(data.try_keys(:type, 'type'))
-
       game = {
-        type: type || 0,
-        name: data.try_keys(:name, 'name'),
-        url: data.try_keys(:url, 'url'),
-        details: data.try_keys(:details, 'details'),
-        state: data.try_keys(:state, 'state'),
-        application_id: data.try_keys(:application, 'application'),
+        'type' => PLAYING_TYPE.index(data.try_keys(:type, 'type')).to_i,
+        'name' => data.try_keys(:name, 'name')&.to_s,
+        'url' => data.try_keys(:url, 'url')&.to_s,
+        'details' => data.try_keys(:details, 'details')&.to_s,
+        'state' => data.try_keys(:state, 'state')&.to_s,
+        'application_id' => data.try_keys(:application, 'application')&.to_s,
 
-        timestamps: times.empty? ? nil : times,
-        assets: assets.empty? ? nil : assets,
+        'timestamps' => times.empty? ? nil : times,
+        'assets' => assets.empty? ? nil : assets,
       }.delete_if {|_,v| v.nil? }
 
       game
