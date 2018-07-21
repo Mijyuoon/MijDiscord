@@ -79,7 +79,6 @@ module MijDiscord
       start_typing: MijDiscord::Events::StartTyping,
 
       update_presence: MijDiscord::Events::UpdatePresence,
-      update_playing: MijDiscord::Events::UpdatePlaying,
       update_voice_state: MijDiscord::Events::UpdateVoiceState,
     }.freeze
 
@@ -620,25 +619,22 @@ module MijDiscord
 
         when :USER_UPDATE
           user = @cache.put_user(data, update: true)
-          @profile.update_data(data) if user.id == @auth.id
+          @profile.update_data(data) if @profile == user
 
           trigger_event(:update_user, self, user)
 
         when :PRESENCE_UPDATE
-          return unless data['guild_id']
-
-          server = @cache.get_server(data['guild_id'])
-          member = server.cache.put_member(data, update: true)
-
-          old_game = member.game
-          member.update_presence(data)
-          @profile.update_presence(data) if member.id == @auth.id
-
-          if old_game != member.game
-            trigger_event(:update_playing, self, data)
+          if data['guild_id']
+            server = @cache.get_server(data['guild_id'])
+            user = server.cache.get_member(data['user']['id'])
+            user.update_presence(data)
           else
-            trigger_event(:update_presence, self, data)
+            user = @cache.get_user(data['user']['id'])
+            user.update_presence(data)
+            @profile.update_presence(data) if @profile == user
           end
+
+          trigger_event(:update_presence, self, data)
 
         when :VOICE_STATE_UPDATE
           server = @cache.get_server(data['guild_id'])

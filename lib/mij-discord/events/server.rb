@@ -67,36 +67,26 @@ module MijDiscord::Events
 
     attr_reader :status
 
+    attr_reader :game
+
     filter_match(:user, on: :id_obj, cmp: :eql?)
     filter_match(:status, on: Symbol, cmp: :eql?)
 
-    def initialize(bot, data)
-      server = @bot.server(data['guild_id'])
-      super(bot, server)
+    filter_match(:game, field: [:game, :name], on: [String, Regexp], cmp: :case)
 
-      @status = data['status'].to_sym
+    def initialize(bot, data)
+      super(bot, bot.server(data['guild_id']))
+
       @user = @bot.user(data['user']['id'])
-    end
-  end
-
-  class UpdatePlaying < UpdatePresence
-    attr_reader :game
-
-    attr_reader :stream_type
-
-    attr_reader :stream_url
-
-    filter_match(:game, on: [String, Regexp], cmp: :case)
-    filter_match(:stream_type, on: Integer, cmp: :eql?)
-
-    def initialize(bot, data)
-      super(bot, data)
+      @status = data['status'].to_sym
 
       if (game = data['game'])
-        @game = game['name']
-        @stream_type = game['type']
-        @stream_url = game['url']
+        @game = MijDiscord::Data::Game.new(game)
       end
+    end
+
+    def member
+      @server&.member(@user.id)
     end
   end
 end

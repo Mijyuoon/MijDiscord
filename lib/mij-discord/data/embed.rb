@@ -78,24 +78,24 @@ module MijDiscord::Data
 
     def self.construct(data)
       embed = {
-        type: data.try_keys(:type, 'type') || :rich,
-        title: data.try_keys(:title, 'title'),
-        description: data.try_keys(:description, 'description'),
-        url: data.try_keys(:url, 'url'),
+        'type' => data.try_keys(:type, 'type') || :rich,
+        'title' => data.try_keys(:title, 'title'),
+        'description' => data.try_keys(:description, 'description'),
+        'url' => data.try_keys(:url, 'url'),
 
-        color: data.try_keys(:color, 'color')&.to_i,
-        timestamp: data.try_keys(:timestamp, 'timestamp')&.iso8601,
+        'color' => data.try_keys(:color, 'color')&.to_i,
+        'timestamp' => data.try_keys(:timestamp, 'timestamp')&.iso8601,
 
-        footer: data.try_keys(:footer, 'footer')&.to_hash,
-        thumbnail: data.try_keys(:thumbnail, 'thumbnail')&.to_hash,
+        'footer' => data.try_keys(:footer, 'footer')&.to_hash,
+        'thumbnail' => data.try_keys(:thumbnail, 'thumbnail')&.to_hash,
 
-        image: data.try_keys(:image, 'image')&.to_hash,
-        video: data.try_keys(:video, 'video')&.to_hash,
+        'image' => data.try_keys(:image, 'image')&.to_hash,
+        'video' => data.try_keys(:video, 'video')&.to_hash,
 
-        author: data.try_keys(:author, 'author')&.to_hash,
-        provider: data.try_keys(:provider, 'provider')&.to_hash,
+        'author' => data.try_keys(:author, 'author')&.to_hash,
+        'provider' => data.try_keys(:provider, 'provider')&.to_hash,
 
-        fields: data.try_keys(:fields, 'fields')&.map(&:to_hash),
+        'fields' => data.try_keys(:fields, 'fields')&.map(&:to_hash),
       }.delete_if {|_,v| v.nil? }
 
       embed
@@ -120,8 +120,8 @@ module MijDiscord::Data
 
     def to_hash
       {
-        text: @text,
-        icon_url: @icon_url,
+        'text' => @text,
+        'icon_url' => @icon_url,
       }.delete_if {|_,v| v.nil? }
     end
   end
@@ -146,9 +146,9 @@ module MijDiscord::Data
 
     def to_hash
       {
-        url: @url,
-        width: @width,
-        height: @height,
+        'url' => @url,
+        'width' => @width,
+        'height' => @height,
       }.delete_if {|_,v| v.nil? }
     end
   end
@@ -173,9 +173,9 @@ module MijDiscord::Data
 
     def to_hash
       {
-        name: @name,
-        url: @url,
-        icon_url: @icon_url,
+        'name' => @name,
+        'url' => @url,
+        'icon_url' => @icon_url,
       }.delete_if {|_,v| v.nil? }
     end
   end
@@ -195,8 +195,8 @@ module MijDiscord::Data
 
     def to_hash
       {
-        name: @name,
-        url: @url,
+        'name' => @name,
+        'url' => @url,
       }.delete_if {|_,v| v.nil? }
     end
   end
@@ -218,9 +218,9 @@ module MijDiscord::Data
 
     def to_hash
       {
-        name: @name,
-        value: @value,
-        inline: @inline,
+        'name' => @name,
+        'value' => @value,
+        'inline' => @inline,
       }.delete_if {|_,v| v.nil? }
     end
   end
