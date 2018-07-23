@@ -627,10 +627,10 @@ module MijDiscord
           if data['guild_id']
             server = @cache.get_server(data['guild_id'])
             user = server.cache.get_member(data['user']['id'])
-            user.update_presence(data)
+            user&.update_presence(data)
           else
             user = @cache.get_user(data['user']['id'])
-            user.update_presence(data)
+            user&.update_presence(data)
             @profile.update_presence(data) if @profile == user
           end
 
