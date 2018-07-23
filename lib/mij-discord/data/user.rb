@@ -44,10 +44,10 @@ module MijDiscord::Data
       @application = data['application_id']
 
       if (start_time = data.dig('timestamps', 'start'))
-        @start_time = Time.at(start_time).utc
+        @start_time = Time.at(start_time.to_i).utc
       end
       if (end_time = data.dig('timestamps', 'end'))
-        @end_time = Time.at(end_time).utc
+        @end_time = Time.at(end_time.to_i).utc
       end
 
       if (assets = data['assets'])
