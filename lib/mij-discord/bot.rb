@@ -624,14 +624,24 @@ module MijDiscord
           trigger_event(:update_user, self, user)
 
         when :PRESENCE_UPDATE
+          # Bullshit logic due to Discord gateway sending this in a stupid way
+          # TODO: Rewrite relevant parts for better handling?
           if data['guild_id']
             server = @cache.get_server(data['guild_id'])
             user = server.cache.get_member(data['user']['id'])
+
             user&.update_presence(data)
+            user&.update_data(data)
           else
             user = @cache.get_user(data['user']['id'])
+
             user&.update_presence(data)
-            @profile.update_presence(data) if @profile == user
+            user&.update_data(data['user'])
+
+            if @profile == user
+              @profile.update_presence(data)
+              @profile.update_data(data['user'])
+            end
           end
 
           trigger_event(:update_presence, self, data)
