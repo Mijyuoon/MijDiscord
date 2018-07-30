@@ -67,7 +67,6 @@ module MijDiscord::Data
       @id = data['id'].to_i
       @large = data['large']
       @member_count = data['member_count']
-      @members_chunked = 0
 
       @cache = MijDiscord::Cache::ServerCache.new(self, @bot)
 
@@ -136,7 +135,7 @@ module MijDiscord::Data
       return if @members_chunked.nil?
 
       @members_chunked += data.length
-      data.each {|mb| @cache.put_member(mb) }
+      data.each {|mb| @cache.put_member(mb, update: true) }
 
       @members_chunked = nil if @members_chunked == @member_count
     end
@@ -183,11 +182,13 @@ module MijDiscord::Data
       @cache.get_role(id)
     end
 
-    def members
-      unless @members_chunked.nil?
+    def members(full = false)
+      if full && !@members_chunk_sent
+        @members_chunked, @members_chunk_sent = 0, true
         @bot.gateway.send_request_members(@id, '', 0)
-        sleep(0.05) while @members_chunked
       end
+
+      sleep(0.05) while @members_chunked
 
       @cache.list_members
     end
