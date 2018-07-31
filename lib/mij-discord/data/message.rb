@@ -84,22 +84,27 @@ module MijDiscord::Data
       if (reactions = data['reactions'])
         @reactions = reactions.map {|x| Reaction.new(x, self) }
       end
+      @reactions ||= []
 
       if (mentions = data['mentions'])
         @user_mentions = mentions.map {|x| @bot.cache.put_user(x) }
       end
+      @user_mentions ||= []
 
       if @channel.text? && (mentions = data['mention_roles'])
         @role_mentions = mentions.map {|x| @channel.server.role(x) }
       end
+      @role_mentions ||= []
 
       if (attachments = data['attachments'])
         @attachments = attachments.map {|x| Attachment.new(x, self) }
       end
+      @attachments ||= []
 
       if (embeds = data['embeds'])
         @embeds = embeds.map {|x| Embed.new(x) }
       end
+      @embeds ||= []
     end
 
     def update_reaction(add: nil, remove: nil, clear: false)

@@ -106,11 +106,12 @@ module MijDiscord::Data
     end
 
     def update_emojis(data)
-      @emojis = {}
-      data['emojis'].each do |em|
-        emoji = MijDiscord::Data::Emoji.new(em, self)
-        @emojis[emoji.id] = emoji
+      if (emojis = data['emojis'])
+        @emojis = emojis.each_with_object({}) do |el, p|
+          p[el['id'].to_i] = Emoji.new(el, self)
+        end
       end
+      @emojis ||= {}
     end
 
     def update_voice_state(data)

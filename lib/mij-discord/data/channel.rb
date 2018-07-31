@@ -63,13 +63,11 @@ module MijDiscord::Data
       @parent_id = data.fetch('parent_id', @parent_id).to_i
 
       if (perms = data['permission_overwrites'])
-        @permission_overwrites = {}
-
-        perms.each do |elem|
-          id = elem['id'].to_i
-          @permission_overwrites[id] = Overwrite.from_hash(elem)
+        @permission_overwrites = perms.each_with_object({}) do |el, p|
+          p[el['id'].to_i] = Overwrite.from_hash(el)
         end
       end
+      @permission_overwrites ||= {}
     end
 
     def mention

@@ -20,13 +20,17 @@ module MijDiscord::Data
     alias_method :eql?, :==
 
     def creation_time
-      ms = (@id >> 22) + DISCORD_EPOCH
-      Time.at(ms / 1000.0).utc
+      IDObject.timestamp(@id)
     end
 
     def self.synthesize(time)
       ms = (time.to_f * 1000).to_i
       (ms - DISCORD_EPOCH) << 22
+    end
+
+    def self.timestamp(id)
+      ms = (id >> 22) + DISCORD_EPOCH
+      Time.at(ms / 1000.0).utc
     end
   end
 
