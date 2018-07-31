@@ -81,29 +81,24 @@ module MijDiscord::Data
 
       @mention_everyone = !!data['mention_everyone']
 
-      @reactions = []
       if (reactions = data['reactions'])
-        reactions.each {|x| @reactions << Reaction.new(x, self) }
+        @reactions = reactions.map {|x| Reaction.new(x, self) }
       end
 
-      @user_mentions = []
       if (mentions = data['mentions'])
-        mentions.each {|x| @user_mentions << @bot.cache.put_user(x) }
+        @user_mentions = mentions.map {|x| @bot.cache.put_user(x) }
       end
 
-      @role_mentions = []
       if @channel.text? && (mentions = data['mention_roles'])
-        mentions.each {|x| @role_mentions << @channel.server.role(x) }
+        @role_mentions = mentions.map {|x| @channel.server.role(x) }
       end
 
-      @attachments = []
       if (attachments = data['attachments'])
-        attachments.each {|x| @attachments << Attachment.new(x, self) }
+        @attachments = attachments.map {|x| Attachment.new(x, self) }
       end
 
-      @embeds = []
       if (embeds = data['embeds'])
-        embeds.each {|x| @embeds << Embed.new(x) }
+        @embeds = embeds.map {|x| Embed.new(x) }
       end
     end
 
