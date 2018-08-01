@@ -12,6 +12,9 @@ module MijDiscord::Core::API
           bot_name = auth.name || 'generic'
           ua_base = "DiscordBot (https://github.com/Mijyuoon/mij-discord, v#{MijDiscord::VERSION})"
           "#{ua_base} mij-discord/#{MijDiscord::VERSION} #{bot_name}"
+
+        when :user
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:54.0) Gecko/20100101 Firefox/54.0.1'
       end
     end
 
