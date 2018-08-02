@@ -398,10 +398,73 @@ module MijDiscord::Data
       MijDiscord::Core::API.widget_url(@id, style)
     end
 
+    def search_messages(limit: 25, offset: 0, sort_by: nil, sort_asc: false,
+    nsfw: true, around: 2, content: nil, author: nil, channel: nil, mentions: nil,
+    author_is: nil, author_not: nil, has: nil, has_not: nil, before: nil, after: nil)
+      author = author ? [*author].map(&:to_id) : nil
+      channel = channel ? [*channel].map(&:to_id) : nil
+      mentions = mentions ? [*mentions].map(&:to_id) : nil
+
+      has_not = has_not ? [*has_not].map {|x| "-#{x}" } : []
+      author_not = author_not ? [*author_not].map {|x| "-#{x}" } : []
+
+      has = has_not | (has ? [*has].map(&:to_s) : [])
+      author_is = author_not | (author_is ? [*author_is].map(&:to_s) : [])
+
+      before = before ? IDObject.synthesize(before) : nil
+      after = after ? IDObject.synthesize(after) : nil
+
+      options = {
+        limit: limit,
+        offset: offset,
+        sort_by: sort_by,
+        sort_order: sort_asc ? 'asc' : 'desc',
+        context_size: around,
+        include_nsfw: nsfw,
+        author_id: author,
+        author_type: author_is,
+        channel_id: channel,
+        mentions: mentions,
+        max_id: before,
+        min_id: after,
+        content: content,
+        has: has,
+      }.delete_if {|_,v| v.nil? }
+
+      response = MijDiscord::Core::API::Server.search_messages(@bot.auth, @id, options)
+      SearchResults.new(JSON.parse(response), @bot)
+    end
+
     def inspect
       MijDiscord.make_inspect(self,
       :id, :name, :owner, :member_count, :features, :embed_enabled, :verification_level,
       :content_filter_level, :default_notifications, :afk_timeout, :afk_channel)
+    end
+  end
+
+  class SearchResults
+    ResultData = Struct.new(:result, :context) do
+      def inspect
+        MijDiscord.make_inspect(self, :result, :context)
+      end
+    end
+
+    attr_reader :total_count
+
+    attr_reader :messages
+
+    def initialize(data, bot)
+      @total_count = data['total_results']
+
+      @messages = data['messages'].map do |group|
+        context = group.map {|x| Message.new(x, bot) }
+        result = context.delete_at(context.length / 2)
+        ResultData.new(result, context)
+      end
+    end
+
+    def inspect
+      MijDiscord.make_inspect(self, :total_count, :messages)
     end
   end
 end
