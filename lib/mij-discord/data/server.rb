@@ -445,7 +445,7 @@ module MijDiscord::Data
   class SearchResults
     ResultData = Struct.new(:result, :context) do
       def inspect
-        MijDiscord.make_inspect(self, :result, :context)
+        %(#<ResultData result=#{result.inspect} context=#{context.inspect}>)
       end
     end
 
