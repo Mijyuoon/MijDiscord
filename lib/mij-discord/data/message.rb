@@ -63,7 +63,7 @@ module MijDiscord::Data
           @author = @channel.recipient
         else
           member = @channel.server.member(author['id'])
-          @author = member || @bot.user(author['id'])
+          @author = member || @bot.cache.put_user(author)
         end
       end
 
