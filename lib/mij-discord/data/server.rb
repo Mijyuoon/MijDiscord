@@ -115,19 +115,20 @@ module MijDiscord::Data
     end
 
     def update_voice_state(data)
-      user = @cache.get_member(data['user_id'])
+      uid = data['user_id'].to_id
+      user = @cache.get_member(uid)
 
       if (chan_id = data['channel_id']&.to_i)
-        state = (@voice_states[user.id] ||= VoiceState.new(user))
+        state = (@voice_states[uid] ||= VoiceState.new(user))
         channel = @cache.get_channel(chan_id)
 
         state.update_data(channel, data) if channel
         state
       else
-        state = @voice_states.delete(user.id)
-        state ||= VoiceState.new(user)
+        state = @voice_states.delete(uid)
+        state ||= VoiceState.new(user) if user
 
-        state.update_data(nil, data)
+        state&.update_data(nil, data)
         state
       end
     end
@@ -252,6 +253,16 @@ module MijDiscord::Data
     def webhooks
       response = MijDiscord::Core::API::Server.webhooks(@bot.auth, @id)
       JSON.parse(response).map {|x| Webhook.new(x, @bot) }
+    end
+
+    def webhook(id, token = nil)
+      response = if token
+        MijDiscord::Core::API::Webhook.token_webhook(token, id)
+      else
+        MijDiscord::Core::API::Webhook.webhook(@bot.auth, id)
+      end
+
+      Webhook.new(JSON.parse(response), @bot)
     end
 
     def prune_count(days)
