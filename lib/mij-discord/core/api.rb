@@ -162,7 +162,7 @@ module MijDiscord::Core::API
         data = JSON.parse(e.response)
         if data['message'] || data['code']
           raise klazz.new(data['code'], data['message'], e.response)
-        elsif (error = (data['content'] || data['embed']).join)
+        elsif (error = (data['content'] || data['embed'])&.join)
           if MijDiscord::Errors::MessageTooLong.match_pattern?(error)
             raise MijDiscord::Errors::MessageTooLong.new(error, e.response)
           end
