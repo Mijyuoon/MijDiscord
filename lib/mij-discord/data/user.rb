@@ -139,9 +139,6 @@ module MijDiscord::Data
     def initialize(data, bot)
       @bot = bot
 
-      # Kludge for User::resolve2 API call
-      data = data['user'] if data['user'].is_a?(Hash)
-
       @id = data['id'].to_i
       @bot_account = !!data['bot']
       update_data(data)

@@ -84,14 +84,19 @@ module MijDiscord::Cache
         response = begin
           MijDiscord::Core::API::User.resolve(@bot.auth, id)
         rescue MijDiscord::Errors::Forbidden
-          raise unless @bot.auth.type == :user
+          raise unless @bot.auth.user?
           MijDiscord::Core::API::User.resolve2(@bot.auth, id)
         end
       rescue MijDiscord::Errors::NotFound
         return nil
       end
 
-      @users[id] = MijDiscord::Data::User.new(JSON.parse(response), @bot)
+      data = JSON.parse(response)
+      if data['user'].is_a?(Hash)
+        data = data['user']
+      end
+
+      @users[id] = MijDiscord::Data::User.new(data, @bot)
     end
 
     def put_server(data, update: false)
@@ -288,7 +293,12 @@ module MijDiscord::Cache
         return nil
       end
 
-      message = @messages.store(id, MijDiscord::Data::Message.new(JSON.parse(response), @bot))
+      data = JSON.parse(response)
+      if data.is_a?(Array)
+        data = data.first || return
+      end
+
+      message = @messages.store(id, MijDiscord::Data::Message.new(data, @bot))
       @messages.shift while @messages.length > @max_messages
 
       message

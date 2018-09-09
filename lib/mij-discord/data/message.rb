@@ -48,8 +48,6 @@ module MijDiscord::Data
     def initialize(data, bot)
       @bot = bot
 
-      data = data.first if data.is_a?(Array)
-
       @id = data['id'].to_i
       @channel = @bot.channel(data['channel_id'])
 
