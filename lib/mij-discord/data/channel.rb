@@ -305,12 +305,14 @@ module MijDiscord::Data
         else raise ArgumentError, 'Invalid embed'
       end&.to_hash
 
-      response = MijDiscord::Core::API::Channel.create_message(@bot.auth, @id, text, tts, embed)
+      nonce = MijDiscord::Data::IDObject.synthesize(Time.now)
+      response = MijDiscord::Core::API::Channel.create_message(@bot.auth, @id, nonce, text, tts, embed)
       @cache.put_message(JSON.parse(response))
     end
 
     def send_file(file, caption: '', tts: false)
-      response = MijDiscord::Core::API::Channel.upload_file(@bot.auth, @id, file, caption, tts)
+      nonce = MijDiscord::Data::IDObject.synthesize(Time.now)
+      response = MijDiscord::Core::API::Channel.upload_file(@bot.auth, @id, nonce, file, caption, tts)
       @cache.put_message(JSON.parse(response))
     end
 

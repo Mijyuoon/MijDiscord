@@ -73,13 +73,13 @@ module MijDiscord::Core::API::Channel
 
     # Send a message to a channel
     # https://discordapp.com/developers/docs/resources/channel#create-message
-    def create_message(auth, channel_id, message, tts = false, embed = nil, mentions = [])
+    def create_message(auth, channel_id, nonce, message, tts = false, embed = nil)
       MijDiscord::Core::API.request(
         :channels_cid_messages_mid,
         channel_id,
         :post,
         "#{MijDiscord::Core::API::APIBASE_URL}/channels/#{channel_id}/messages",
-        { content: message, mentions: mentions, tts: tts, embed: embed }.to_json,
+        { nonce: nonce, content: message, tts: tts, embed: embed }.to_json,
         Authorization: auth,
         content_type: :json
       )
@@ -87,13 +87,13 @@ module MijDiscord::Core::API::Channel
 
     # Send a file as a message to a channel
     # https://discordapp.com/developers/docs/resources/channel#upload-file
-    def upload_file(auth, channel_id, file, caption = nil, tts = false)
+    def upload_file(auth, channel_id, nonce, file, caption = nil, tts = false)
       MijDiscord::Core::API.request(
         :channels_cid_messages_mid,
         channel_id,
         :post,
         "#{MijDiscord::Core::API::APIBASE_URL}/channels/#{channel_id}/messages",
-        { file: file, content: caption, tts: tts },
+        { nonce: nonce, file: file, content: caption, tts: tts },
         Authorization: auth
       )
     end
