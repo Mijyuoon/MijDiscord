@@ -26,7 +26,17 @@ $ gem install mij-discord
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+require "mij-discord"
+
+bot = MijDiscord::Bot.new(client_id:<here client id>, token:<here token>)
+
+bot.add_event(:create_message) do |event|
+  event.channel.send_message(text: "Pong!") if event.content == "Ping!"
+end
+
+bot.connect(false)
+```
 
 ## Contributing
 
