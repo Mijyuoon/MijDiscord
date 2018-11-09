@@ -80,7 +80,7 @@ module MijDiscord::Data
     def modify_roles(add, remove, reason = nil)
       add, remove = add.map(&:to_id), remove.map(&:to_id)
       roles = (@roles.map(&:id) - remove + add).uniq
-      MijDiscord::Core::API::Server.update_member(@bot.tolen, @server.id, @user.id, reason, roles: roles)
+      MijDiscord::Core::API::Server.update_member(@bot.auth, @server.id, @user.id, reason, roles: roles)
     end
 
     def add_role(role, reason = nil)
