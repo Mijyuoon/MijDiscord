@@ -357,7 +357,7 @@ module MijDiscord
 
       status = case status
         when nil then @profile.status
-        when :online, :idle, :dnd, :online then status
+        when :online, :idle, :dnd, :invisible, :offline then status
         else raise ArgumentError, 'Invalid status'
       end
 
