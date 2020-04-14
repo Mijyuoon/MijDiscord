@@ -8,6 +8,8 @@ module MijDiscord::Data
       2 => :voice,
       3 => :group,
       4 => :category,
+      5 => :news,
+      6 => :store,
     }.freeze
 
     include IDObject
@@ -43,14 +45,14 @@ module MijDiscord::Data
 
     def self.create(data, bot, server)
       case TYPES[data['type']]
-        when :text, :pm, :group
+        when :text, :pm, :group, :news, :store
           TextChannel.new(data, bot, server)
         when :voice
           VoiceChannel.new(data, bot, server)
         when :category
           ChannelCategory.new(data, bot, server)
         else
-          raise 'Broken channel object!'
+          raise "Broken channel object! (type: #{data['type']})"
       end
     end
 
