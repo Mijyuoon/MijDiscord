@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module MijDiscord::Core::API
-  APIBASE_URL = 'https://discordapp.com/api/v6'
+  APIBASE_URL = 'https://discord.com/api/v6'
 
   CDN_URL = 'https://cdn.discordapp.com'
 
@@ -14,7 +14,7 @@ module MijDiscord::Core::API
           "#{ua_base} mij-discord/#{MijDiscord::VERSION} #{bot_name}"
 
         when :user
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:54.0) Gecko/20100101 Firefox/54.0.1'
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101 Firefox/78.0'
       end
     end
 
